@@ -1,0 +1,24 @@
+[package]
+name = "stm32mp15x-hal"
+version = "0.1.0"
+edition = "2021"
+authors = ["Oliver Rockstedt <info@sourcebox.de>"]
+description = "HAL for STM32MP15x SoCs."
+repository = "https://github.com/sourcebox/stm32mp15x-hal-rs"
+license = "MIT"
+categories = ["embedded", "hardware-support", "no-std"]
+keywords = ["stm32", "stm32mp1", "hal"]
+
+[features]
+mpu-ca7 = ["dep:cortex-a7"]
+mcu-cm4 = ["dep:cortex-m"]
+
+[dependencies]
+cortex-a7 = { path = "./cortex-a7", optional = true }
+cortex-m = { version = "0.7.7", optional = true }
+stm32mp1 = { version = "0.15.1", default-features = false, features = [
+    "stm32mp157",
+] }
+critical-section = { version = "1.1.2", features = ["restore-state-u32"] }
+embedded-hal = "1.0.0-rc.1"
+cfg-if = "1.0.0"
