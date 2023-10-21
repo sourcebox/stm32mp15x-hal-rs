@@ -158,6 +158,22 @@ impl From<OverSampling> for bool {
     }
 }
 
+// ----------------------------- Errors -------------------------------
+
+/// Errors
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum Error {
+    /// Parity check error.
+    Parity,
+    /// Framing error.
+    Framing,
+    /// Receive buffer overrun.
+    Overrun,
+    /// Noise error.
+    Noise,
+}
+
 // ------------------------- Implementation ---------------------------
 
 impl<R> Usart<R>
@@ -216,7 +232,9 @@ where
         self.enable();
 
         // Discard any received data.
-        while self.read_byte().is_some() {}
+        while self.read_ready().unwrap_or(false) {
+            self.read_one().ok();
+        }
     }
 
     /// Deinitializes the peripheral.
@@ -225,14 +243,49 @@ where
         R::disable_clock();
     }
 
-    /// Returns a received byte or `None`.
-    pub fn read_byte(&self) -> Option<u8> {
-        if self.is_receiver_not_empty() {
-            let regs = R::registers();
-            Some((regs.rdr.read().bits() & 0xFF) as u8)
-        } else {
-            None
+    /// Returns if bytes have been received and can be read.
+    pub fn read_ready(&self) -> Result<bool, Error> {
+        Ok(self.is_receiver_not_empty())
+    }
+
+    /// Returns one byte from the receiver, blocks if none available.
+    pub fn read_one(&mut self) -> Result<u8, Error> {
+        while !self.read_ready()? {}
+
+        if self.is_parity_error() {
+            self.clear_parity_error();
+            return Err(Error::Parity);
+        } else if self.is_framing_error() {
+            self.clear_framing_error();
+            return Err(Error::Framing);
+        } else if self.is_overrun_error() {
+            self.clear_overrun_error();
+            return Err(Error::Overrun);
+        } else if self.is_noise_detected() {
+            self.clear_noise_detected();
+            return Err(Error::Noise);
         }
+
+        let regs = R::registers();
+        Ok((regs.rdr.read().bits() & 0xFF) as u8)
+    }
+
+    /// Writes received bytes into a buffer, blocks if none available.
+    /// Returns the total number of read bytes.
+    pub fn read(&mut self, buffer: &mut [u8]) -> Result<usize, Error> {
+        while !self.read_ready()? {}
+
+        let mut count = 0;
+
+        for byte in buffer.iter_mut() {
+            *byte = self.read_one()?;
+            count += 1;
+            if !self.read_ready()? {
+                break;
+            }
+        }
+
+        Ok(count)
     }
 
     /// Writes bytes from a buffer, blocking.
@@ -247,11 +300,26 @@ where
         while !self.is_transfer_complete() {}
     }
 
-    /// Returns a received byte asynchronuously.
-    pub async fn read_byte_async(&self) -> u8 {
+    /// Returns one byte from the receiver asynchronuously.
+    pub async fn read_one_async(&mut self) -> Result<u8, Error> {
         self.wait_for_receiver_not_empty_async().await;
+
+        if self.is_parity_error() {
+            self.clear_parity_error();
+            return Err(Error::Parity);
+        } else if self.is_framing_error() {
+            self.clear_framing_error();
+            return Err(Error::Framing);
+        } else if self.is_overrun_error() {
+            self.clear_overrun_error();
+            return Err(Error::Overrun);
+        } else if self.is_noise_detected() {
+            self.clear_noise_detected();
+            return Err(Error::Noise);
+        }
+
         let regs = R::registers();
-        (regs.rdr.read().bits() & 0xFF) as u8
+        Ok((regs.rdr.read().bits() & 0xFF) as u8)
     }
 
     /// Writes bytes from a buffer asynchronuously.
