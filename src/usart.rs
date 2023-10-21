@@ -288,18 +288,6 @@ where
         Ok(count)
     }
 
-    /// Writes bytes from a buffer, blocking.
-    pub fn write(&mut self, buffer: &[u8]) {
-        unsafe {
-            for byte in buffer {
-                let regs = R::registers();
-                regs.tdr.write(|w| w.bits(*byte as u32));
-                while !self.is_transmitter_empty() {}
-            }
-        }
-        while !self.is_transfer_complete() {}
-    }
-
     /// Returns one byte from the receiver asynchronuously.
     pub async fn read_one_async(&mut self) -> Result<u8, Error> {
         self.wait_for_receiver_not_empty_async().await;
@@ -320,6 +308,18 @@ where
 
         let regs = R::registers();
         Ok((regs.rdr.read().bits() & 0xFF) as u8)
+    }
+
+    /// Writes bytes from a buffer, blocking.
+    pub fn write(&mut self, buffer: &[u8]) {
+        unsafe {
+            for byte in buffer {
+                let regs = R::registers();
+                regs.tdr.write(|w| w.bits(*byte as u32));
+                while !self.is_transmitter_empty() {}
+            }
+        }
+        while !self.is_transfer_complete() {}
     }
 
     /// Writes bytes from a buffer asynchronuously.
