@@ -537,7 +537,7 @@ impl Instance for SAI1 {
     }
 
     fn clock_frequency() -> f32 {
-        rcc::pll4_p_frequency()
+        rcc::pll4_q_frequency()
     }
 }
 
@@ -573,7 +573,7 @@ impl Instance for SAI2 {
     }
 
     fn clock_frequency() -> f32 {
-        rcc::pll4_p_frequency()
+        rcc::pll4_q_frequency()
     }
 }
 
@@ -609,7 +609,7 @@ impl Instance for SAI3 {
     }
 
     fn clock_frequency() -> f32 {
-        rcc::pll4_p_frequency()
+        rcc::pll4_q_frequency()
     }
 }
 
@@ -645,6 +645,6 @@ impl Instance for SAI4 {
     }
 
     fn clock_frequency() -> f32 {
-        rcc::pll4_p_frequency()
+        rcc::pll4_q_frequency()
     }
 }
