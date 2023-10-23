@@ -54,13 +54,14 @@ Only very basic internal handler on the Cortex-A7, efforts will be concentrated 
 | ADC           | --- Not implemented yet. ---              |
 | I2C           | Basic master, needs more testing.         |
 | SPI           | Only master is tested. No I2S support.    |
-| USART         | Receive only.                             |
+| USART         | Mostly done.                              |
 | SAI           | API not nice for using with DMA.          |
-| SDMMC         | Init for SDHC, block read                 |
+| SDMMC         | Init for SDHC, block read.                |
 | USB           | --- Not implemented yet. ---              |
 | IWDG          | API may change.                           |
 | STGEN         | Working, but counter value is read-only.  |
 | RNG           | Clock source is fixed to CSI.             |
+| LTDC          | Initial setup, needs testing.             |
 | Timers        | --- Not implemented yet. ---              |
 
 Note that not all peripherals can be accessed from every core, e.g. IWDG is only available for the Cortex-A7 cores (MPU0 and MPU1).

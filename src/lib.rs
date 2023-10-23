@@ -19,6 +19,7 @@ pub mod dma;
 pub mod dmamux;
 pub mod gpio;
 pub mod i2c;
+pub mod ltdc;
 pub mod rcc;
 pub mod rng;
 pub mod sai;
