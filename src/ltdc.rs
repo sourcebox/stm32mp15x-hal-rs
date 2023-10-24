@@ -42,6 +42,8 @@ pub struct LtdcConfig {
     pub not_data_enable_polarity: Polarity,
     /// Pixel clock polarity.
     pub pixel_clock_polarity: Polarity,
+    /// Enable dithering.
+    pub dithering: bool,
 }
 
 impl Default for LtdcConfig {
@@ -62,6 +64,7 @@ impl Default for LtdcConfig {
             vsync_polarity: Polarity::ActiveLow,
             not_data_enable_polarity: Polarity::ActiveLow,
             pixel_clock_polarity: Polarity::ActiveLow,
+            dithering: false,
         }
     }
 }
@@ -112,6 +115,7 @@ impl Ltdc {
 
         self.disable();
 
+        // Calculate timing values.
         let accumulated_horizontal_back_porch =
             config.horizontal_synchronization_width + config.horizontal_back_porch;
         let accumulated_vertical_back_porch =
@@ -126,6 +130,7 @@ impl Ltdc {
         let window_vertical_start_position = accumulated_vertical_back_porch;
         let window_vertical_stop_position = window_vertical_start_position + config.active_height;
 
+        // Calculate frame buffer related values.
         let bytes_per_pixel = match config.pixel_format {
             PixelFormat::Argb8888 => 4,
             PixelFormat::Rgb888 => 3,
@@ -135,9 +140,12 @@ impl Ltdc {
             | PixelFormat::Al88 => 2,
             PixelFormat::L8 | PixelFormat::Al44 => 1,
         };
+        let frame_buffer_line_length = config.active_width * bytes_per_pixel;
+        let frame_buffer_line_count = config.active_height;
 
         let regs = self.registers();
 
+        // Configure timings.
         unsafe {
             regs.ltdc_sscr.modify(|_, w| {
                 w.hsw()
@@ -163,6 +171,10 @@ impl Ltdc {
                     .totalh()
                     .bits(total_height as u16 - 1)
             });
+        }
+
+        // Configure layer 1.
+        unsafe {
             regs.ltdc_l1whpcr.modify(|_, w| {
                 w.whstpos()
                     .bits(window_horizontal_start_position as u16)
@@ -179,13 +191,20 @@ impl Ltdc {
                 .modify(|_, w| w.pf().bits(config.pixel_format as u8));
             regs.ltdc_l1cfbar
                 .write(|w| w.bits(config.frame_buffer_address));
-            // TODO: calculate correct values
-            // regs.ltdc_l1cfblr
-            //     .write(|w| w.bits(config.active_width * config.active_height * bytes_per_pixel));
+            regs.ltdc_l1cfblr.write(|w| {
+                w.cfbp()
+                    .bits(frame_buffer_line_length as u16)
+                    .cfbll()
+                    .bits(frame_buffer_line_length as u16 + 7)
+            });
+            regs.ltdc_l1cfblnr
+                .write(|w| w.cfblnbr().bits(frame_buffer_line_count as u16));
         }
 
+        // Enable layer 1.
         regs.ltdc_l1cr.modify(|_, w| w.len().set_bit());
 
+        // Configure polarities.
         regs.ltdc_gcr.modify(|_, w| {
             w.vspol()
                 .bit(config.vsync_polarity == Polarity::ActiveHigh)
@@ -195,7 +214,12 @@ impl Ltdc {
                 .bit(config.not_data_enable_polarity == Polarity::ActiveHigh)
                 .pcpol()
                 .bit(config.pixel_clock_polarity == Polarity::ActiveHigh)
+                .den()
+                .bit(config.dithering)
         });
+
+        // Reload shadow registers immediately.
+        regs.ltdc_srcr.modify(|_, w| w.imr().set_bit());
 
         self.enable();
     }
