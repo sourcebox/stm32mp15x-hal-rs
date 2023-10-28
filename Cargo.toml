@@ -8,6 +8,7 @@ repository = "https://github.com/sourcebox/stm32mp15x-hal-rs"
 license = "MIT"
 categories = ["embedded", "hardware-support", "no-std"]
 keywords = ["stm32", "stm32mp1", "hal"]
+publish = false
 
 [features]
 mpu-ca7 = ["dep:cortex-a7"]
