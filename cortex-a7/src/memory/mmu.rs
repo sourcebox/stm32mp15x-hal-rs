@@ -70,9 +70,18 @@ where
                 | SectionAttr::ExecuteNever)
                 .bits(),
 
-            // Default is device memory without execute permissions.
-            _ => (SectionAttr::Bufferable | SectionAttr::ApFullAccess | SectionAttr::ExecuteNever)
+            // Unbuffered data is normal memory without execute permissions.
+            MemoryRegion::UnbufferedData => (SectionAttr::Shareable
+                | SectionAttr::Cacheable
+                | SectionAttr::ApFullAccess
+                | SectionAttr::ExecuteNever)
                 .bits(),
+
+            // Default is device memory without execute permissions.
+            MemoryRegion::Device => {
+                (SectionAttr::Bufferable | SectionAttr::ApFullAccess | SectionAttr::ExecuteNever)
+                    .bits()
+            }
         };
 
         *table_entry = addr | attr | L1_ENTRY_SECTION;
