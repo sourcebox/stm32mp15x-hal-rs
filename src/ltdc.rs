@@ -101,6 +101,32 @@ pub enum PixelFormat {
     Al88 = 0b111,
 }
 
+/// Layer selection.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum Layer {
+    /// Layer 1.
+    Layer1,
+    /// Layer 2.
+    Layer2,
+}
+
+/// Layer configuration.
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct LayerConfig {
+    /// Window X0 position.
+    window_x0: u32,
+    /// Window X1 position.
+    window_x1: u32,
+    /// Window Y0 position.
+    window_y0: u32,
+    /// Window Y1 position.
+    window_y1: u32,
+    /// Pixel format.
+    pixel_format: PixelFormat,
+    /// Address of frame buffer.
+    frame_buffer_address: u32,
+}
+
 // ------------------------- Implementation ---------------------------
 
 impl Ltdc {
@@ -110,6 +136,9 @@ impl Ltdc {
     }
 
     /// Initializes the peripheral.
+    ///
+    /// Sets the timing and polarity parameters and enables layer 1 with the full
+    /// display width and height.
     pub fn init(&mut self, config: LtdcConfig) {
         self.enable_clock();
 
@@ -156,15 +185,18 @@ impl Ltdc {
         }
 
         // Configure and enable layer 1.
-        self.configure_layer_1(
-            0,
-            config.active_width,
-            0,
-            config.active_height,
-            config.pixel_format,
-            config.frame_buffer_address,
+        self.configure_layer(
+            Layer::Layer1,
+            LayerConfig {
+                window_x0: 0,
+                window_x1: config.active_width,
+                window_y0: 0,
+                window_y1: config.active_height,
+                pixel_format: config.pixel_format,
+                frame_buffer_address: config.frame_buffer_address,
+            },
         );
-        self.enable_layer_1();
+        self.enable_layer(Layer::Layer1);
 
         // Configure polarities.
         regs.ltdc_gcr.modify(|_, w| {
@@ -203,23 +235,18 @@ impl Ltdc {
         regs.ltdc_srcr.modify(|_, w| w.vbr().set_bit());
     }
 
-    /// Set configuration for layer 1.
-    pub fn configure_layer_1(
-        &mut self,
-        window_x0: u32,
-        window_x1: u32,
-        window_y0: u32,
-        window_y1: u32,
-        pixel_format: PixelFormat,
-        frame_buffer_address: u32,
-    ) {
+    /// Configures a layer.
+    pub fn configure_layer(&mut self, layer: Layer, config: LayerConfig) {
         let regs = self.registers();
 
-        let horizontal_start_position = window_x0 as u16 + regs.ltdc_bpcr.read().ahbp().bits() + 1;
-        let horizontal_stop_position = window_x1 as u16 + regs.ltdc_bpcr.read().ahbp().bits();
-        let vertical_start_position = window_y0 as u16 + regs.ltdc_bpcr.read().avbp().bits() + 1;
-        let vertical_stop_position = window_y1 as u16 + regs.ltdc_bpcr.read().avbp().bits();
-        let bytes_per_pixel = match pixel_format {
+        let horizontal_start_position =
+            config.window_x0 as u16 + regs.ltdc_bpcr.read().ahbp().bits() + 1;
+        let horizontal_stop_position =
+            config.window_x1 as u16 + regs.ltdc_bpcr.read().ahbp().bits();
+        let vertical_start_position =
+            config.window_y0 as u16 + regs.ltdc_bpcr.read().avbp().bits() + 1;
+        let vertical_stop_position = config.window_y1 as u16 + regs.ltdc_bpcr.read().avbp().bits();
+        let bytes_per_pixel = match config.pixel_format {
             PixelFormat::Argb8888 => 4,
             PixelFormat::Rgb888 => 3,
             PixelFormat::Rgb565
@@ -228,48 +255,93 @@ impl Ltdc {
             | PixelFormat::Al88 => 2,
             PixelFormat::L8 | PixelFormat::Al44 => 1,
         };
-        let width = window_x1 - window_x0;
-        let height = window_y1 - window_y0;
+        let width = config.window_x1 - config.window_x0;
+        let height = config.window_y1 - config.window_y0;
         let line_length = width * bytes_per_pixel;
         let line_count = height;
 
-        unsafe {
-            regs.ltdc_l1whpcr.modify(|_, w| {
-                w.whstpos()
-                    .bits(horizontal_start_position)
-                    .whsppos()
-                    .bits(horizontal_stop_position)
-            });
-            regs.ltdc_l1wvpcr.modify(|_, w| {
-                w.wvstpos()
-                    .bits(vertical_start_position)
-                    .wvsppos()
-                    .bits(vertical_stop_position)
-            });
-            regs.ltdc_l1pfcr
-                .modify(|_, w| w.pf().bits(pixel_format as u8));
-            regs.ltdc_l1cfbar.write(|w| w.bits(frame_buffer_address));
-            regs.ltdc_l1cfblr.write(|w| {
-                w.cfbp()
-                    .bits(line_length as u16)
-                    .cfbll()
-                    .bits(line_length as u16 + 7)
-            });
-            regs.ltdc_l1cfblnr
-                .write(|w| w.cfblnbr().bits(line_count as u16));
+        match layer {
+            Layer::Layer1 => unsafe {
+                regs.ltdc_l1whpcr.modify(|_, w| {
+                    w.whstpos()
+                        .bits(horizontal_start_position)
+                        .whsppos()
+                        .bits(horizontal_stop_position)
+                });
+                regs.ltdc_l1wvpcr.modify(|_, w| {
+                    w.wvstpos()
+                        .bits(vertical_start_position)
+                        .wvsppos()
+                        .bits(vertical_stop_position)
+                });
+                regs.ltdc_l1pfcr
+                    .modify(|_, w| w.pf().bits(config.pixel_format as u8));
+                regs.ltdc_l1cfbar
+                    .write(|w| w.bits(config.frame_buffer_address));
+                regs.ltdc_l1cfblr.write(|w| {
+                    w.cfbp()
+                        .bits(line_length as u16)
+                        .cfbll()
+                        .bits(line_length as u16 + 7)
+                });
+                regs.ltdc_l1cfblnr
+                    .write(|w| w.cfblnbr().bits(line_count as u16));
+            },
+            Layer::Layer2 => unsafe {
+                regs.ltdc_l2whpcr.modify(|_, w| {
+                    w.whstpos()
+                        .bits(horizontal_start_position)
+                        .whsppos()
+                        .bits(horizontal_stop_position)
+                });
+                regs.ltdc_l2wvpcr.modify(|_, w| {
+                    w.wvstpos()
+                        .bits(vertical_start_position)
+                        .wvsppos()
+                        .bits(vertical_stop_position)
+                });
+                regs.ltdc_l2pfcr
+                    .modify(|_, w| w.pf().bits(config.pixel_format as u8));
+                regs.ltdc_l2cfbar
+                    .write(|w| w.bits(config.frame_buffer_address));
+                regs.ltdc_l2cfblr.write(|w| {
+                    w.cfbp()
+                        .bits(line_length as u16)
+                        .cfbll()
+                        .bits(line_length as u16 + 7)
+                });
+                regs.ltdc_l2cfblnr
+                    .write(|w| w.cfblnbr().bits(line_count as u16));
+            },
         }
     }
 
-    /// Enable layer 1.
-    pub fn enable_layer_1(&mut self) {
+    /// Enables a layer.
+    pub fn enable_layer(&mut self, layer: Layer) {
         let regs = self.registers();
-        regs.ltdc_l1cr.modify(|_, w| w.len().set_bit());
+
+        match layer {
+            Layer::Layer1 => {
+                regs.ltdc_l1cr.modify(|_, w| w.len().set_bit());
+            }
+            Layer::Layer2 => {
+                regs.ltdc_l2cr.modify(|_, w| w.len().set_bit());
+            }
+        }
     }
 
-    /// Disable layer 1.
-    pub fn disable_layer_1(&mut self) {
+    /// Disables a layer.
+    pub fn disable_layer(&mut self, layer: Layer) {
         let regs = self.registers();
-        regs.ltdc_l1cr.modify(|_, w| w.len().clear_bit());
+
+        match layer {
+            Layer::Layer1 => {
+                regs.ltdc_l1cr.modify(|_, w| w.len().clear_bit());
+            }
+            Layer::Layer2 => {
+                regs.ltdc_l2cr.modify(|_, w| w.len().clear_bit());
+            }
+        }
     }
 
     /// Enables the peripheral.

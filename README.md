@@ -61,7 +61,7 @@ Only very basic internal handler on the Cortex-A7, efforts will be concentrated 
 | IWDG          | API may change.                           |
 | STGEN         | Working, but counter value is read-only.  |
 | RNG           | Clock source is fixed to CSI.             |
-| LTDC          | Initial setup, layer 1 only.              |
+| LTDC          | Basic setup, needs more testing.          |
 | Timers        | --- Not implemented yet. ---              |
 
 Note that not all peripherals can be accessed from every core, e.g. IWDG is only available for the Cortex-A7 cores (MPU0 and MPU1).
