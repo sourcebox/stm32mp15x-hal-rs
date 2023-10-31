@@ -36,6 +36,30 @@ pub fn invalidate_dcache_all() {
     }
 }
 
+/// Clean data cache for an address range.
+pub fn clean_dcache_by_range(start_addr: u32, end_addr: u32) {
+    unsafe {
+        asm! {
+                "stmfd sp!, {{r0-r1}}",
+
+                "mov   r0, {r0}",
+                "mov   r1, {r1}",
+
+                "bic   r0, r0, #7",
+            "1:",
+                "mcr   p15, 0, r0, c7, c10, 1",
+                "add   r0, r0, #8",
+                "cmp   r0, r1",
+                "blo   1b",
+                "dsb",
+
+                "ldmfd sp!, {{r0-r1}}",
+            r0 = in(reg) start_addr,
+            r1 = in(reg) end_addr,
+        }
+    }
+}
+
 /// Apply cache maintenance to given cache level.
 /// - `level:` cache level to be maintained.
 /// - `maint:` 0 - invalidate, 1 - clean, otherwise - invalidate and clean.

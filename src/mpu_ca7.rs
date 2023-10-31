@@ -9,6 +9,7 @@ mod critical_section_impl;
 use core::arch::global_asm;
 use core::sync::atomic::{AtomicBool, Ordering};
 
+pub use cortex_a7::memory::cache::clean_dcache_by_range;
 use cortex_a7::memory::mmu::{TranslationTable, TRANSLATION_TABLE_LENGTH};
 pub use cortex_a7::memory::MemoryRegion;
 
