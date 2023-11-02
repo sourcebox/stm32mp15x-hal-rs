@@ -344,6 +344,20 @@ impl Ltdc {
         }
     }
 
+    /// Sets the frame buffer address for a layer.
+    pub fn set_layer_frame_buffer(&mut self, layer: Layer, address: u32) {
+        let regs = self.registers();
+
+        match layer {
+            Layer::Layer1 => unsafe {
+                regs.ltdc_l1cfbar.write(|w| w.bits(address));
+            },
+            Layer::Layer2 => unsafe {
+                regs.ltdc_l2cfbar.write(|w| w.bits(address));
+            },
+        }
+    }
+
     /// Enables the peripheral.
     pub fn enable(&mut self) {
         let regs = self.registers();
