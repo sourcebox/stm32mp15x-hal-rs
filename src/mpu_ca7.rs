@@ -233,13 +233,3 @@ static mut MMU_TRANSLATION_TABLES: TranslationTables = TranslationTables {
     mpu0: [0; TRANSLATION_TABLE_LENGTH],
     mpu1: [0; TRANSLATION_TABLE_LENGTH],
 };
-
-#[no_mangle]
-extern "C" fn irq_handler() {
-    let irqn = gic::acknowledge_pending();
-
-    gic::end_interrupt(irqn);
-}
-
-#[no_mangle]
-extern "C" fn fiq_handler() {}
