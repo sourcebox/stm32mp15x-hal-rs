@@ -153,8 +153,8 @@ impl Delay {
     }
 }
 
-impl embedded_hal::delay::DelayUs for Delay {
-    fn delay_us(&mut self, us: u32) {
-        delay_us(us);
+impl embedded_hal::delay::DelayNs for Delay {
+    fn delay_ns(&mut self, ns: u32) {
+        delay_us(ns / 1000);
     }
 }
