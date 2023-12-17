@@ -756,11 +756,11 @@ impl ErrorType for Pin {
 }
 
 impl InputPin for Pin {
-    fn is_low(&self) -> Result<bool, Self::Error> {
+    fn is_low(&mut self) -> Result<bool, Self::Error> {
         Ok(self.get_input_state() == PinState::Low)
     }
 
-    fn is_high(&self) -> Result<bool, Self::Error> {
+    fn is_high(&mut self) -> Result<bool, Self::Error> {
         Ok(self.get_input_state() == PinState::High)
     }
 }
@@ -780,11 +780,11 @@ impl OutputPin for Pin {
 }
 
 impl StatefulOutputPin for Pin {
-    fn is_set_low(&self) -> Result<bool, Self::Error> {
+    fn is_set_low(&mut self) -> Result<bool, Self::Error> {
         Ok(self.get_input_state() == PinState::Low)
     }
 
-    fn is_set_high(&self) -> Result<bool, Self::Error> {
+    fn is_set_high(&mut self) -> Result<bool, Self::Error> {
         Ok(self.get_input_state() == PinState::High)
     }
 }

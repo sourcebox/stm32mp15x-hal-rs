@@ -21,6 +21,6 @@ stm32mp1 = { version = "0.15.1", default-features = false, features = [
     "stm32mp157",
 ] }
 critical-section = { version = "1.1.2", features = ["restore-state-u32"] }
-embedded-hal = "1.0.0-rc.2"
+embedded-hal = "1.0.0-rc.3"
 cfg-if = "1.0.0"
 int-enum = { version = "0.5.0", default-features = false }
