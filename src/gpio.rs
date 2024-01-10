@@ -1,8 +1,6 @@
 //! GPIO ports and pins.
 
-pub use embedded_hal::digital::{
-    ErrorType, InputPin, OutputPin, PinState, StatefulOutputPin, ToggleableOutputPin,
-};
+pub use embedded_hal::digital::{ErrorType, InputPin, OutputPin, PinState, StatefulOutputPin};
 
 use crate::bitworker::BitWorker;
 use crate::pac;
@@ -787,9 +785,7 @@ impl StatefulOutputPin for Pin {
     fn is_set_high(&mut self) -> Result<bool, Self::Error> {
         Ok(self.get_input_state() == PinState::High)
     }
-}
 
-impl ToggleableOutputPin for Pin {
     fn toggle(&mut self) -> Result<(), Self::Error> {
         match self.get_input_state() {
             PinState::Low => self.set_high(),
