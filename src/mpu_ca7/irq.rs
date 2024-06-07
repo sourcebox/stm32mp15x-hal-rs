@@ -475,7 +475,7 @@ extern "C" fn irq_handler() {
 
     unsafe {
         if let Some(irq_handler) = IRQ_HANDLER {
-            if let Ok(irqn) = Irqn::from_int(irqn) {
+            if let Ok(irqn) = Irqn::try_from(irqn) {
                 irq_handler(irqn);
             }
         }
