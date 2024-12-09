@@ -20,7 +20,7 @@ cortex-m = { version = "0.7.7", optional = true }
 stm32mp1 = { version = "0.15.1", default-features = false, features = [
     "stm32mp157",
 ] }
-critical-section = { version = "1.1.2", features = ["restore-state-u32"] }
+critical-section = { version = "1.2.0", features = ["restore-state-u32"] }
 embedded-hal = "1.0.0"
 cfg-if = "1.0.0"
 int-enum = { version = "1.1.2", default-features = false }
