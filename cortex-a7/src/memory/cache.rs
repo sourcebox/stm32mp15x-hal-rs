@@ -46,7 +46,7 @@ pub fn clean_dcache_by_range(start_addr: u32, end_addr: u32) {
                 "mov   r1, {r1}",
 
                 "bic   r0, r0, #7",
-            "1:",
+            "2:",
                 "mcr   p15, 0, r0, c7, c10, 1",
                 "add   r0, r0, #8",
                 "cmp   r0, r1",
