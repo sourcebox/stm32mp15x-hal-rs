@@ -78,10 +78,10 @@ fn init_mpu0(config: HalConfig) {
 
     unsafe {
         cortex_a7::memory::mmu::init_translation_table(
-            &mut MMU_TRANSLATION_TABLES.mpu0,
+            &mut *&raw mut MMU_TRANSLATION_TABLES.mpu0,
             config.memory_region_mapper,
         );
-        cortex_a7::memory::mmu::enable(&MMU_TRANSLATION_TABLES.mpu0);
+        cortex_a7::memory::mmu::enable(&*&raw const MMU_TRANSLATION_TABLES.mpu0);
     }
 
     crate::gpio::init();
@@ -100,10 +100,10 @@ fn init_mpu0(config: HalConfig) {
 fn init_mpu1(config: HalConfig) {
     unsafe {
         cortex_a7::memory::mmu::init_translation_table(
-            &mut MMU_TRANSLATION_TABLES.mpu1,
+            &mut *&raw mut MMU_TRANSLATION_TABLES.mpu1,
             config.memory_region_mapper,
         );
-        cortex_a7::memory::mmu::enable(&MMU_TRANSLATION_TABLES.mpu1);
+        cortex_a7::memory::mmu::enable(&*&raw const MMU_TRANSLATION_TABLES.mpu1);
     }
 
     gic::cpu_interface_init();
