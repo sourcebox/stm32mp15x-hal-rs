@@ -1,6 +1,6 @@
 .syntax unified
-.cpu cortex-m4
 .thumb
+.cpu cortex-m4
 
 
 .section .reset_handler, "ax"
