@@ -50,7 +50,7 @@ pub fn clean_dcache_by_range(start_addr: u32, end_addr: u32) {
                 "mcr   p15, 0, r0, c7, c10, 1",
                 "add   r0, r0, #8",
                 "cmp   r0, r1",
-                "blo   1b",
+                "blo   2b",
                 "dsb",
 
                 "ldmfd sp!, {{r0-r1}}",
