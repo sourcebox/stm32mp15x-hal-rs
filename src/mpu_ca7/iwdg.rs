@@ -128,7 +128,7 @@ where
 
         let regs = R::registers();
         while regs.sr().read().rvu().bit_is_set() {}
-        regs.rlr().read().bits() as u16
+        regs.rlr().read().bits()
     }
 
     /// Sets the reload value. Must be called after the watchdog is started.
