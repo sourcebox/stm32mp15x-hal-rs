@@ -315,7 +315,7 @@ where
 
         unsafe {
             let regs = R::registers();
-            regs.sai_acr1.modify(|_, w| {
+            regs.acr1().modify(|_, w| {
                 w.mode()
                     .bits(config.mode.into())
                     .mono()
@@ -339,10 +339,9 @@ where
             });
 
             // DMA bit should be set after mode.
-            regs.sai_acr1
-                .modify(|_, w| w.dmaen().bit(config.dma_enable));
+            regs.acr1().modify(|_, w| w.dmaen().bit(config.dma_enable));
 
-            regs.sai_afrcr.modify(|_, w| {
+            regs.afrcr().modify(|_, w| {
                 w.fsoff()
                     .bit(config.frame_sync_offset.into())
                     .fspol()
@@ -356,14 +355,14 @@ where
             // FSDEF bit is missing in PAC, so handle it manually.
             match config.frame_sync_definition {
                 FrameSyncDefinition::StartFrame => {
-                    regs.sai_afrcr.modify(|r, w| w.bits(r.bits() & !(1 << 16)));
+                    regs.afrcr().modify(|r, w| w.bits(r.bits() & !(1 << 16)));
                 }
                 FrameSyncDefinition::ChannelIdent => {
-                    regs.sai_afrcr.modify(|r, w| w.bits(r.bits() | (1 << 16)));
+                    regs.afrcr().modify(|r, w| w.bits(r.bits() | (1 << 16)));
                 }
             }
 
-            regs.sai_aslotr.modify(|_, w| {
+            regs.aslotr().modify(|_, w| {
                 w.slotsz()
                     .bits(config.slot_size.into())
                     .sloten()
@@ -386,7 +385,7 @@ where
 
         unsafe {
             let regs = R::registers();
-            regs.sai_bcr1.modify(|_, w| {
+            regs.bcr1().modify(|_, w| {
                 w.mode()
                     .bits(config.mode.into())
                     .mono()
@@ -410,10 +409,9 @@ where
             });
 
             // DMA bit should be set after mode.
-            regs.sai_bcr1
-                .modify(|_, w| w.dmaen().bit(config.dma_enable));
+            regs.bcr1().modify(|_, w| w.dmaen().bit(config.dma_enable));
 
-            regs.sai_bfrcr.modify(|_, w| {
+            regs.bfrcr().modify(|_, w| {
                 w.fsoff()
                     .bit(config.frame_sync_offset.into())
                     .fspol()
@@ -427,14 +425,14 @@ where
             // FSDEF bit is missing in PAC, so handle it manually.
             match config.frame_sync_definition {
                 FrameSyncDefinition::StartFrame => {
-                    regs.sai_bfrcr.modify(|r, w| w.bits(r.bits() & !(1 << 16)));
+                    regs.bfrcr().modify(|r, w| w.bits(r.bits() & !(1 << 16)));
                 }
                 FrameSyncDefinition::ChannelIdent => {
-                    regs.sai_bfrcr.modify(|r, w| w.bits(r.bits() | (1 << 16)));
+                    regs.bfrcr().modify(|r, w| w.bits(r.bits() | (1 << 16)));
                 }
             }
 
-            regs.sai_bslotr.modify(|_, w| {
+            regs.bslotr().modify(|_, w| {
                 w.slotsz()
                     .bits(config.slot_size.into())
                     .sloten()
@@ -459,27 +457,27 @@ where
     /// Enables the block A.
     fn enable_block_a(&mut self) {
         let regs = R::registers();
-        regs.sai_acr1.modify(|_, w| w.saien().set_bit());
+        regs.acr1().modify(|_, w| w.saien().set_bit());
     }
 
     /// Enables the block B.
     fn enable_block_b(&mut self) {
         let regs = R::registers();
-        regs.sai_bcr1.modify(|_, w| w.saien().set_bit());
+        regs.bcr1().modify(|_, w| w.saien().set_bit());
     }
 
     /// Disables the block A.
     fn disable_block_a(&mut self) {
         let regs = R::registers();
-        regs.sai_acr1.modify(|_, w| w.saien().clear_bit());
-        while regs.sai_acr1.read().saien().bit_is_set() {}
+        regs.acr1().modify(|_, w| w.saien().clear_bit());
+        while regs.acr1().read().saien().bit_is_set() {}
     }
 
     /// Disables the block B.
     fn disable_block_b(&mut self) {
         let regs = R::registers();
-        regs.sai_bcr1.modify(|_, w| w.saien().clear_bit());
-        while regs.sai_bcr1.read().saien().bit_is_set() {}
+        regs.bcr1().modify(|_, w| w.saien().clear_bit());
+        while regs.bcr1().read().saien().bit_is_set() {}
     }
 
     /// Returns the register block.
@@ -516,10 +514,10 @@ impl Instance for SAI1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2ensetr.modify(|_, w| w.sai1en().set_bit());
+                rcc.mp_apb2ensetr().modify(|_, w| w.sai1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2ensetr.modify(|_, w| w.sai1en().set_bit());
+                rcc.mc_apb2ensetr().modify(|_, w| w.sai1en().set_bit());
             }
         }
     }
@@ -528,10 +526,10 @@ impl Instance for SAI1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2enclrr.modify(|_, w| w.sai1en().set_bit());
+                rcc.mp_apb2enclrr().modify(|_, w| w.sai1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2enclrr.modify(|_, w| w.sai1en().set_bit());
+                rcc.mc_apb2enclrr().modify(|_, w| w.sai1en().set_bit());
             }
         }
     }
@@ -552,10 +550,10 @@ impl Instance for SAI2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2ensetr.modify(|_, w| w.sai2en().set_bit());
+                rcc.mp_apb2ensetr().modify(|_, w| w.sai2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2ensetr.modify(|_, w| w.sai2en().set_bit());
+                rcc.mc_apb2ensetr().modify(|_, w| w.sai2en().set_bit());
             }
         }
     }
@@ -564,10 +562,10 @@ impl Instance for SAI2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2enclrr.modify(|_, w| w.sai2en().set_bit());
+                rcc.mp_apb2enclrr().modify(|_, w| w.sai2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2enclrr.modify(|_, w| w.sai2en().set_bit());
+                rcc.mc_apb2enclrr().modify(|_, w| w.sai2en().set_bit());
             }
         }
     }
@@ -588,10 +586,10 @@ impl Instance for SAI3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2ensetr.modify(|_, w| w.sai3en().set_bit());
+                rcc.mp_apb2ensetr().modify(|_, w| w.sai3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2ensetr.modify(|_, w| w.sai3en().set_bit());
+                rcc.mc_apb2ensetr().modify(|_, w| w.sai3en().set_bit());
             }
         }
     }
@@ -600,10 +598,10 @@ impl Instance for SAI3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2enclrr.modify(|_, w| w.sai3en().set_bit());
+                rcc.mp_apb2enclrr().modify(|_, w| w.sai3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2enclrr.modify(|_, w| w.sai3en().set_bit());
+                rcc.mc_apb2enclrr().modify(|_, w| w.sai3en().set_bit());
             }
         }
     }
@@ -624,10 +622,10 @@ impl Instance for SAI4 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb3ensetr.modify(|_, w| w.sai4en().set_bit());
+                rcc.mp_apb3ensetr().modify(|_, w| w.sai4en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb3ensetr.modify(|_, w| w.sai4en().set_bit());
+                rcc.mc_apb3ensetr().modify(|_, w| w.sai4en().set_bit());
             }
         }
     }
@@ -636,10 +634,10 @@ impl Instance for SAI4 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb3enclrr.modify(|_, w| w.sai4en().set_bit());
+                rcc.mp_apb3enclrr().modify(|_, w| w.sai4en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb3enclrr.modify(|_, w| w.sai4en().set_bit());
+                rcc.mc_apb3enclrr().modify(|_, w| w.sai4en().set_bit());
             }
         }
     }

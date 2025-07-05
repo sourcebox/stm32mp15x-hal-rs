@@ -146,7 +146,7 @@ where
         let regs = R::registers();
 
         unsafe {
-            regs.i2c_timingr.write(|w| {
+            regs.timingr().write(|w| {
                 w.presc()
                     .bits(presc as u8)
                     .scldel()
@@ -160,7 +160,7 @@ where
             });
         }
 
-        regs.i2c_icr.write(|w| {
+        regs.icr().write(|w| {
             w.addrcf()
                 .set_bit()
                 .nackcf()
@@ -195,14 +195,14 @@ where
         let regs = R::registers();
 
         // Wait for any ongoing operation to be finished.
-        while regs.i2c_isr.read().busy().bit_is_set() {}
+        while regs.isr().read().busy().bit_is_set() {}
 
         // Clear NACK and STOP flags.
-        regs.i2c_icr
+        regs.icr()
             .write(|w| w.nackcf().set_bit().stopcf().set_bit());
 
         unsafe {
-            regs.i2c_cr2.modify(|_, w| {
+            regs.cr2().modify(|_, w| {
                 w.sadd()
                     .bits((address as u16) << 1)
                     .nbytes()
@@ -216,12 +216,12 @@ where
             });
         }
 
-        while regs.i2c_isr.read().stopf().bit_is_clear() {}
+        while regs.isr().read().stopf().bit_is_clear() {}
 
-        let nack = regs.i2c_isr.read().nackf().bit_is_set();
+        let nack = regs.isr().read().nackf().bit_is_set();
 
         if nack {
-            regs.i2c_icr
+            regs.icr()
                 .write(|w| w.nackcf().set_bit().stopcf().set_bit());
         }
 
@@ -287,7 +287,7 @@ where
                 eh::i2c::Operation::Read(buffer) => {
                     unsafe {
                         // Set slave address, transfer size and flags.
-                        regs.i2c_cr2.modify(|_, w| {
+                        regs.cr2().modify(|_, w| {
                             w.sadd()
                                 .bits((address as u16) << 1)
                                 .nbytes()
@@ -299,14 +299,14 @@ where
                                 .start()
                                 .set_bit()
                         });
-                        regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                        regs.icr().write(|w| w.stopcf().set_bit());
                         for byte in buffer.iter_mut() {
                             self.wait_for_receiver_not_empty_async().await;
-                            *byte = regs.i2c_rxdr.read().rxdata().bits();
+                            *byte = regs.rxdr().read().rxdata().bits();
                         }
                         if autoend {
                             self.wait_for_stop_async().await;
-                            regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                            regs.icr().write(|w| w.stopcf().set_bit());
                         } else {
                             self.wait_for_transfer_complete_async().await;
                         }
@@ -315,7 +315,7 @@ where
                 eh::i2c::Operation::Write(buffer) => {
                     unsafe {
                         // Set slave address and transfer size.
-                        regs.i2c_cr2.modify(|_, w| {
+                        regs.cr2().modify(|_, w| {
                             w.sadd()
                                 .bits((address as u16) << 1)
                                 .nbytes()
@@ -327,14 +327,14 @@ where
                                 .start()
                                 .set_bit()
                         });
-                        regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                        regs.icr().write(|w| w.stopcf().set_bit());
                         for byte in buffer.iter() {
                             self.wait_for_transmitter_empty_async().await;
-                            regs.i2c_txdr.write(|w| w.txdata().bits(*byte));
+                            regs.txdr().write(|w| w.txdata().bits(*byte));
                         }
                         if autoend {
                             self.wait_for_stop_async().await;
-                            regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                            regs.icr().write(|w| w.stopcf().set_bit());
                         } else {
                             self.wait_for_transfer_complete_async().await;
                         }
@@ -349,20 +349,20 @@ where
     /// Enables the peripheral.
     fn enable(&mut self) {
         let regs = R::registers();
-        regs.i2c_cr1.modify(|_, w| w.pe().set_bit());
+        regs.cr1().modify(|_, w| w.pe().set_bit());
     }
 
     /// Disables the peripheral.
     fn disable(&mut self) {
         let regs = R::registers();
-        regs.i2c_cr1.modify(|_, w| w.pe().clear_bit());
+        regs.cr1().modify(|_, w| w.pe().clear_bit());
     }
 
     /// Asynchronuously wait while peripheral is busy.
     pub async fn wait_while_busy_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.i2c_isr.read().busy().bit_is_set() {
+            if regs.isr().read().busy().bit_is_set() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -376,7 +376,7 @@ where
     pub async fn wait_for_transmitter_empty_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.i2c_isr.read().txe().bit_is_clear() {
+            if regs.isr().read().txe().bit_is_clear() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -390,7 +390,7 @@ where
     pub async fn wait_for_receiver_not_empty_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.i2c_isr.read().rxne().bit_is_clear() {
+            if regs.isr().read().rxne().bit_is_clear() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -404,7 +404,7 @@ where
     pub async fn wait_for_stop_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.i2c_isr.read().stopf().bit_is_clear() {
+            if regs.isr().read().stopf().bit_is_clear() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -418,7 +418,7 @@ where
     pub async fn wait_for_transfer_complete_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.i2c_isr.read().tc().bit_is_clear() {
+            if regs.isr().read().tc().bit_is_clear() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -455,7 +455,7 @@ where
         let regs = R::registers();
 
         // Wait for any ongoing operation to be finished.
-        while regs.i2c_isr.read().busy().bit_is_set() {}
+        while regs.isr().read().busy().bit_is_set() {}
 
         let mut operations = operations.iter_mut().peekable();
 
@@ -468,7 +468,7 @@ where
                 eh::i2c::Operation::Read(buffer) => {
                     unsafe {
                         // Set slave address, transfer size and flags.
-                        regs.i2c_cr2.modify(|_, w| {
+                        regs.cr2().modify(|_, w| {
                             w.sadd()
                                 .bits((address as u16) << 1)
                                 .nbytes()
@@ -480,23 +480,23 @@ where
                                 .start()
                                 .set_bit()
                         });
-                        regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                        regs.icr().write(|w| w.stopcf().set_bit());
                         for byte in buffer.iter_mut() {
-                            while regs.i2c_isr.read().rxne().bit_is_clear() {}
-                            *byte = regs.i2c_rxdr.read().rxdata().bits();
+                            while regs.isr().read().rxne().bit_is_clear() {}
+                            *byte = regs.rxdr().read().rxdata().bits();
                         }
                         if autoend {
-                            while regs.i2c_isr.read().stopf().bit_is_clear() {}
-                            regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                            while regs.isr().read().stopf().bit_is_clear() {}
+                            regs.icr().write(|w| w.stopcf().set_bit());
                         } else {
-                            while regs.i2c_isr.read().tc().bit_is_clear() {}
+                            while regs.isr().read().tc().bit_is_clear() {}
                         }
                     }
                 }
                 eh::i2c::Operation::Write(buffer) => {
                     unsafe {
                         // Set slave address and transfer size.
-                        regs.i2c_cr2.modify(|_, w| {
+                        regs.cr2().modify(|_, w| {
                             w.sadd()
                                 .bits((address as u16) << 1)
                                 .nbytes()
@@ -508,16 +508,16 @@ where
                                 .start()
                                 .set_bit()
                         });
-                        regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                        regs.icr().write(|w| w.stopcf().set_bit());
                         for byte in buffer.iter() {
-                            while regs.i2c_isr.read().txe().bit_is_clear() {}
-                            regs.i2c_txdr.write(|w| w.txdata().bits(*byte));
+                            while regs.isr().read().txe().bit_is_clear() {}
+                            regs.txdr().write(|w| w.txdata().bits(*byte));
                         }
                         if autoend {
-                            while regs.i2c_isr.read().stopf().bit_is_clear() {}
-                            regs.i2c_icr.write(|w| w.stopcf().set_bit());
+                            while regs.isr().read().stopf().bit_is_clear() {}
+                            regs.icr().write(|w| w.stopcf().set_bit());
                         } else {
-                            while regs.i2c_isr.read().tc().bit_is_clear() {}
+                            while regs.isr().read().tc().bit_is_clear() {}
                         }
                     }
                 }
@@ -556,10 +556,10 @@ impl Instance for I2C1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.i2c1en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.i2c1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.i2c1en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.i2c1en().set_bit());
             }
         }
     }
@@ -568,10 +568,10 @@ impl Instance for I2C1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.i2c1en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.i2c1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.i2c1en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.i2c1en().set_bit());
             }
         }
     }
@@ -592,10 +592,10 @@ impl Instance for I2C2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.i2c2en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.i2c2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.i2c2en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.i2c2en().set_bit());
             }
         }
     }
@@ -604,10 +604,10 @@ impl Instance for I2C2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.i2c2en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.i2c2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.i2c2en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.i2c2en().set_bit());
             }
         }
     }
@@ -628,10 +628,10 @@ impl Instance for I2C3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.i2c3en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.i2c3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.i2c3en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.i2c3en().set_bit());
             }
         }
     }
@@ -640,10 +640,10 @@ impl Instance for I2C3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.i2c3en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.i2c3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.i2c3en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.i2c3en().set_bit());
             }
         }
     }
@@ -664,10 +664,10 @@ impl Instance for I2C4 {
         cfg_if! {
                 if #[cfg(feature = "mpu-ca7")] {
                     let rcc = unsafe { &(*pac::RCC::ptr()) };
-                    rcc.rcc_mp_apb5ensetr.modify(|_, w| w.i2c4en().set_bit());
+                    rcc.mp_apb5ensetr().modify(|_, w| w.i2c4en().set_bit());
                 } else if #[cfg(feature = "mcu-cm4")] {
                     let rcc = unsafe { &(*pac::RCC::ptr()) };
-                    rcc.rcc_mc_apb5ensetr.modify(|_, w| w.i2c4en().set_bit());
+                    rcc.mc_apb5ensetr().modify(|_, w| w.i2c4en().set_bit());
                 }
 
         }
@@ -677,10 +677,10 @@ impl Instance for I2C4 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb5enclrr.modify(|_, w| w.i2c4en().set_bit());
+                rcc.mp_apb5enclrr().modify(|_, w| w.i2c4en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb5enclrr.modify(|_, w| w.i2c4en().set_bit());
+                rcc.mc_apb5enclrr().modify(|_, w| w.i2c4en().set_bit());
             }
         }
     }
@@ -701,10 +701,10 @@ impl Instance for I2C5 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.i2c5en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.i2c5en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.i2c5en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.i2c5en().set_bit());
             }
         }
     }
@@ -713,10 +713,10 @@ impl Instance for I2C5 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.i2c5en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.i2c5en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.i2c5en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.i2c5en().set_bit());
             }
         }
     }
@@ -737,10 +737,10 @@ impl Instance for I2C6 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb5ensetr.modify(|_, w| w.i2c6en().set_bit());
+                rcc.mp_apb5ensetr().modify(|_, w| w.i2c6en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb5ensetr.modify(|_, w| w.i2c6en().set_bit());
+                rcc.mc_apb5ensetr().modify(|_, w| w.i2c6en().set_bit());
             }
         }
     }
@@ -749,10 +749,10 @@ impl Instance for I2C6 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb5enclrr.modify(|_, w| w.i2c6en().set_bit());
+                rcc.mp_apb5enclrr().modify(|_, w| w.i2c6en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb5enclrr.modify(|_, w| w.i2c6en().set_bit());
+                rcc.mc_apb5enclrr().modify(|_, w| w.i2c6en().set_bit());
             }
         }
     }

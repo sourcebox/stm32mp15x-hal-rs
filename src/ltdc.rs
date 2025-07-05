@@ -158,25 +158,25 @@ impl Ltdc {
 
         // Configure timings.
         unsafe {
-            regs.ltdc_sscr.modify(|_, w| {
+            regs.sscr().modify(|_, w| {
                 w.hsw()
                     .bits(config.horizontal_synchronization_width as u16 - 1)
                     .vsh()
                     .bits(config.vertical_synchronization_height as u16 - 1)
             });
-            regs.ltdc_bpcr.modify(|_, w| {
+            regs.bpcr().modify(|_, w| {
                 w.ahbp()
                     .bits(accumulated_horizontal_back_porch as u16 - 1)
                     .avbp()
                     .bits(accumulated_vertical_back_porch as u16 - 1)
             });
-            regs.ltdc_awcr.modify(|_, w| {
+            regs.awcr().modify(|_, w| {
                 w.aaw()
                     .bits(accumulated_active_width as u16 - 1)
                     .aah()
                     .bits(accumulated_active_height as u16 - 1)
             });
-            regs.ltdc_twcr.modify(|_, w| {
+            regs.twcr().modify(|_, w| {
                 w.totalw()
                     .bits(total_width as u16 - 1)
                     .totalh()
@@ -199,7 +199,7 @@ impl Ltdc {
         self.enable_layer(Layer::Layer1);
 
         // Configure polarities.
-        regs.ltdc_gcr.modify(|_, w| {
+        regs.gcr().modify(|_, w| {
             w.vspol()
                 .bit(config.vsync_polarity == Polarity::ActiveHigh)
                 .hspol()
@@ -226,13 +226,13 @@ impl Ltdc {
     /// Reloads the shadow registers immediately.
     pub fn reload_configuration_immediately(&mut self) {
         let regs = self.registers();
-        regs.ltdc_srcr.modify(|_, w| w.imr().set_bit());
+        regs.srcr().modify(|_, w| w.imr().set_bit());
     }
 
     /// Reloads the shadow registers during the next vertical blanking period.
     pub fn reload_configuration_on_blanking(&mut self) {
         let regs = self.registers();
-        regs.ltdc_srcr.modify(|_, w| w.vbr().set_bit());
+        regs.srcr().modify(|_, w| w.vbr().set_bit());
     }
 
     /// Configures a layer.
@@ -240,12 +240,11 @@ impl Ltdc {
         let regs = self.registers();
 
         let horizontal_start_position =
-            config.window_x0 as u16 + regs.ltdc_bpcr.read().ahbp().bits() + 1;
-        let horizontal_stop_position =
-            config.window_x1 as u16 + regs.ltdc_bpcr.read().ahbp().bits();
+            config.window_x0 as u16 + regs.bpcr().read().ahbp().bits() + 1;
+        let horizontal_stop_position = config.window_x1 as u16 + regs.bpcr().read().ahbp().bits();
         let vertical_start_position =
-            config.window_y0 as u16 + regs.ltdc_bpcr.read().avbp().bits() + 1;
-        let vertical_stop_position = config.window_y1 as u16 + regs.ltdc_bpcr.read().avbp().bits();
+            config.window_y0 as u16 + regs.bpcr().read().avbp().bits() + 1;
+        let vertical_stop_position = config.window_y1 as u16 + regs.bpcr().read().avbp().bits();
         let bytes_per_pixel = match config.pixel_format {
             PixelFormat::Argb8888 => 4,
             PixelFormat::Rgb888 => 3,
@@ -262,55 +261,55 @@ impl Ltdc {
 
         match layer {
             Layer::Layer1 => unsafe {
-                regs.ltdc_l1whpcr.modify(|_, w| {
+                regs.l1whpcr().modify(|_, w| {
                     w.whstpos()
                         .bits(horizontal_start_position)
                         .whsppos()
                         .bits(horizontal_stop_position)
                 });
-                regs.ltdc_l1wvpcr.modify(|_, w| {
+                regs.l1wvpcr().modify(|_, w| {
                     w.wvstpos()
                         .bits(vertical_start_position)
                         .wvsppos()
                         .bits(vertical_stop_position)
                 });
-                regs.ltdc_l1pfcr
+                regs.l1pfcr()
                     .modify(|_, w| w.pf().bits(config.pixel_format as u8));
-                regs.ltdc_l1cfbar
+                regs.l1cfbar()
                     .write(|w| w.bits(config.frame_buffer_address));
-                regs.ltdc_l1cfblr.write(|w| {
+                regs.l1cfblr().write(|w| {
                     w.cfbp()
                         .bits(line_length as u16)
                         .cfbll()
                         .bits(line_length as u16 + 7)
                 });
-                regs.ltdc_l1cfblnr
+                regs.l1cfblnr()
                     .write(|w| w.cfblnbr().bits(line_count as u16));
             },
             Layer::Layer2 => unsafe {
-                regs.ltdc_l2whpcr.modify(|_, w| {
+                regs.l2whpcr().modify(|_, w| {
                     w.whstpos()
                         .bits(horizontal_start_position)
                         .whsppos()
                         .bits(horizontal_stop_position)
                 });
-                regs.ltdc_l2wvpcr.modify(|_, w| {
+                regs.l2wvpcr().modify(|_, w| {
                     w.wvstpos()
                         .bits(vertical_start_position)
                         .wvsppos()
                         .bits(vertical_stop_position)
                 });
-                regs.ltdc_l2pfcr
+                regs.l2pfcr()
                     .modify(|_, w| w.pf().bits(config.pixel_format as u8));
-                regs.ltdc_l2cfbar
+                regs.l2cfbar()
                     .write(|w| w.bits(config.frame_buffer_address));
-                regs.ltdc_l2cfblr.write(|w| {
+                regs.l2cfblr().write(|w| {
                     w.cfbp()
                         .bits(line_length as u16)
                         .cfbll()
                         .bits(line_length as u16 + 7)
                 });
-                regs.ltdc_l2cfblnr
+                regs.l2cfblnr()
                     .write(|w| w.cfblnbr().bits(line_count as u16));
             },
         }
@@ -322,10 +321,10 @@ impl Ltdc {
 
         match layer {
             Layer::Layer1 => {
-                regs.ltdc_l1cr.modify(|_, w| w.len().set_bit());
+                regs.l1cr().modify(|_, w| w.len().set_bit());
             }
             Layer::Layer2 => {
-                regs.ltdc_l2cr.modify(|_, w| w.len().set_bit());
+                regs.l2cr().modify(|_, w| w.len().set_bit());
             }
         }
     }
@@ -336,10 +335,10 @@ impl Ltdc {
 
         match layer {
             Layer::Layer1 => {
-                regs.ltdc_l1cr.modify(|_, w| w.len().clear_bit());
+                regs.l1cr().modify(|_, w| w.len().clear_bit());
             }
             Layer::Layer2 => {
-                regs.ltdc_l2cr.modify(|_, w| w.len().clear_bit());
+                regs.l2cr().modify(|_, w| w.len().clear_bit());
             }
         }
     }
@@ -350,10 +349,10 @@ impl Ltdc {
 
         match layer {
             Layer::Layer1 => unsafe {
-                regs.ltdc_l1cfbar.write(|w| w.bits(address));
+                regs.l1cfbar().write(|w| w.bits(address));
             },
             Layer::Layer2 => unsafe {
-                regs.ltdc_l2cfbar.write(|w| w.bits(address));
+                regs.l2cfbar().write(|w| w.bits(address));
             },
         }
     }
@@ -361,19 +360,19 @@ impl Ltdc {
     /// Enables the peripheral.
     pub fn enable(&mut self) {
         let regs = self.registers();
-        regs.ltdc_gcr.modify(|_, w| w.ltdcen().set_bit());
+        regs.gcr().modify(|_, w| w.ltdcen().set_bit());
     }
 
     /// Disables the peripheral.
     pub fn disable(&mut self) {
         let regs = self.registers();
-        regs.ltdc_gcr.modify(|_, w| w.ltdcen().clear_bit());
+        regs.gcr().modify(|_, w| w.ltdcen().clear_bit());
     }
 
     /// Returns if the peripheral is enabled.
     pub fn is_enabled(&self) -> bool {
         let regs = self.registers();
-        regs.ltdc_gcr.read().ltdcen().bit_is_set()
+        regs.gcr().read().ltdcen().bit_is_set()
     }
 
     /// Returns the register block.
@@ -386,10 +385,10 @@ impl Ltdc {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb4ensetr.modify(|_, w| w.ltdcen().set_bit());
+                rcc.mp_apb4ensetr().modify(|_, w| w.ltdcen().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb4ensetr.modify(|_, w| w.ltdcen().set_bit());
+                rcc.mc_apb4ensetr().modify(|_, w| w.ltdcen().set_bit());
             }
         }
     }
@@ -399,10 +398,10 @@ impl Ltdc {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb4enclrr.modify(|_, w| w.ltdcen().set_bit());
+                rcc.mp_apb4enclrr().modify(|_, w| w.ltdcen().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb4enclrr.modify(|_, w| w.ltdcen().set_bit());
+                rcc.mc_apb4enclrr().modify(|_, w| w.ltdcen().set_bit());
             }
         }
     }

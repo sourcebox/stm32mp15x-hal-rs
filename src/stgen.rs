@@ -16,9 +16,9 @@ impl Stgen {
     /// Returns the current counter value.
     pub fn value(&self) -> u64 {
         let regs = self.registers();
-        let mut upper = regs.stgenc_cntcvu.read().bits();
-        let lower = regs.stgenc_cntcvl.read().bits();
-        if upper < regs.stgenc_cntcvu.read().bits() {
+        let mut upper = regs.cntcvu().read().bits();
+        let lower = regs.cntcvl().read().bits();
+        if upper < regs.cntcvu().read().bits() {
             // An overflow occurred inbetween reads of upper and lower.
             upper += 1;
         }
@@ -32,20 +32,20 @@ impl Stgen {
     pub fn set_base_frequency(&mut self, frequency: u32) {
         let regs = self.registers();
         unsafe {
-            regs.stgenc_cntfid0.write(|w| w.bits(frequency));
+            regs.cntfid0().write(|w| w.bits(frequency));
         }
     }
 
     /// Enables incrementing the counter.
     pub fn start(&mut self) {
         let regs = self.registers();
-        regs.stgenc_cntcr.modify(|_, w| w.en().set_bit());
+        regs.cntcr().modify(|_, w| w.en().set_bit());
     }
 
     /// Disables incrementing the counter.
     pub fn stop(&mut self) {
         let regs = self.registers();
-        regs.stgenc_cntcr.modify(|_, w| w.en().clear_bit());
+        regs.cntcr().modify(|_, w| w.en().clear_bit());
     }
 
     /// Returns the register block.

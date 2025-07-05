@@ -205,7 +205,7 @@ where
         let regs = R::registers();
 
         unsafe {
-            regs.spi_cfg1.modify(|_, w| {
+            regs.cfg1().modify(|_, w| {
                 w.dsize()
                     .bits(config.data_size - 1)
                     .fthlv()
@@ -217,7 +217,7 @@ where
                     .mbr()
                     .bits(config.clock_prescaler as u8)
             });
-            regs.spi_cfg2.modify(|_, w| {
+            regs.cfg2().modify(|_, w| {
                 w.mssi()
                     .bits(config.master_ss_idleness)
                     .midi()
@@ -269,14 +269,14 @@ where
     pub fn write_tx_fifo_byte(&mut self, byte: u8) {
         let regs = R::registers();
         unsafe {
-            core::ptr::write_volatile(regs.spi2s_txdr.as_ptr() as *mut u8, byte);
+            core::ptr::write_volatile(regs.spi2s_txdr().as_ptr() as *mut u8, byte);
         }
     }
 
     /// Reads a byte from the RxFIFO.
     pub fn read_rx_fifo_byte(&mut self) -> u8 {
         let regs = R::registers();
-        unsafe { core::ptr::read_volatile(regs.spi2s_rxdr.as_ptr() as *mut u8) }
+        unsafe { core::ptr::read_volatile(regs.spi2s_rxdr().as_ptr() as *mut u8) }
     }
 
     /// Sets the transfer size.
@@ -285,7 +285,7 @@ where
         self.disable();
         let regs = R::registers();
         unsafe {
-            regs.spi_cr2.modify(|_, w| w.tsize().bits(size));
+            regs.cr2().modify(|_, w| w.tsize().bits(size));
         }
         if enabled {
             self.enable();
@@ -298,85 +298,85 @@ where
     pub fn start_transfer(&mut self) {
         self.enable();
         let regs = R::registers();
-        regs.spi2s_cr1.modify(|_, w| w.cstart().set_bit());
+        regs.spi2s_cr1().modify(|_, w| w.cstart().set_bit());
     }
 
     /// Enables the peripheral.
     pub fn enable(&mut self) {
         let regs = R::registers();
-        regs.spi2s_cr1.modify(|_, w| w.spe().set_bit());
+        regs.spi2s_cr1().modify(|_, w| w.spe().set_bit());
     }
 
     /// Disables the peripheral.
     pub fn disable(&mut self) {
         let regs = R::registers();
-        regs.spi2s_cr1.modify(|_, w| w.spe().clear_bit());
+        regs.spi2s_cr1().modify(|_, w| w.spe().clear_bit());
     }
 
     /// Returns if the peripheral is enabled.
     pub fn is_enabled(&self) -> bool {
         let regs = R::registers();
-        regs.spi2s_cr1.read().spe().bit_is_set()
+        regs.spi2s_cr1().read().spe().bit_is_set()
     }
 
     /// Returns if the TxFIFO has at least one packet of space available.
     pub fn is_transmitter_empty(&self) -> bool {
         let regs = R::registers();
-        regs.spi2s_sr.read().txp().bit_is_set()
+        regs.spi2s_sr().read().txp().bit_is_set()
     }
 
     /// Returns if the RxFIFO contains at least one packet.
     pub fn is_receiver_not_empty(&self) -> bool {
         let regs = R::registers();
-        regs.spi2s_sr.read().rxp().bit_is_set()
+        regs.spi2s_sr().read().rxp().bit_is_set()
     }
 
     /// Returns if transmission transfer is filled.
     pub fn is_transmission_transfer_filled(&self) -> bool {
         let regs = R::registers();
-        regs.spi2s_sr.read().txtf().bit_is_set()
+        regs.spi2s_sr().read().txtf().bit_is_set()
     }
 
     /// Returns if transfer is complete.
     pub fn is_end_of_transfer(&self) -> bool {
         let regs = R::registers();
-        regs.spi2s_sr.read().eot().bit_is_set()
+        regs.spi2s_sr().read().eot().bit_is_set()
     }
 
     /// Returns if an overrun error has occurred.
     pub fn is_overrun_error(&self) -> bool {
         let regs = R::registers();
-        regs.spi2s_sr.read().ovr().bit_is_set()
+        regs.spi2s_sr().read().ovr().bit_is_set()
     }
 
     /// Returns if an underrun error has occurred.
     pub fn is_underrun_error(&self) -> bool {
         let regs = R::registers();
-        regs.spi2s_sr.read().udr().bit_is_set()
+        regs.spi2s_sr().read().udr().bit_is_set()
     }
 
     /// Clears the transmission transfer filled flag.
     pub fn clear_transmission_transfer_filled(&self) {
         let regs = R::registers();
-        regs.spi2s_ifcr.write(|w| w.txtfc().set_bit());
+        regs.spi2s_ifcr().write(|w| w.txtfc().set_bit());
     }
 
     /// Clears the end of transfer flag.
     pub fn clear_end_of_transfer(&self) {
         let regs = R::registers();
-        regs.spi2s_ifcr.write(|w| w.eotc().set_bit());
+        regs.spi2s_ifcr().write(|w| w.eotc().set_bit());
     }
 
     /// Clears an overrun error.
     pub fn clear_overrun_error(&mut self) {
         let regs = R::registers();
-        regs.spi2s_ifcr.write(|w| w.ovrc().set_bit());
+        regs.spi2s_ifcr().write(|w| w.ovrc().set_bit());
     }
 
     /// Clears an underrun error.
     pub fn clear_underrun_error(&mut self) {
         let regs = R::registers();
-        regs.spi2s_ifcr.write(|w| w.udrc().set_bit());
+        regs.spi2s_ifcr().write(|w| w.udrc().set_bit());
     }
 
     /// Returns the register block.
@@ -413,10 +413,10 @@ impl Instance for SPI1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2ensetr.modify(|_, w| w.spi1en().set_bit());
+                rcc.mp_apb2ensetr().modify(|_, w| w.spi1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2ensetr.modify(|_, w| w.spi1en().set_bit());
+                rcc.mc_apb2ensetr().modify(|_, w| w.spi1en().set_bit());
             }
         }
     }
@@ -425,10 +425,10 @@ impl Instance for SPI1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2enclrr.modify(|_, w| w.spi1en().set_bit());
+                rcc.mp_apb2enclrr().modify(|_, w| w.spi1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2enclrr.modify(|_, w| w.spi1en().set_bit());
+                rcc.mc_apb2enclrr().modify(|_, w| w.spi1en().set_bit());
             }
         }
     }
@@ -449,10 +449,10 @@ impl Instance for SPI2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.spi2en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.spi2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.spi2en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.spi2en().set_bit());
             }
         }
     }
@@ -461,10 +461,10 @@ impl Instance for SPI2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.spi2en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.spi2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.spi2en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.spi2en().set_bit());
             }
         }
     }
@@ -485,10 +485,10 @@ impl Instance for SPI3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.spi3en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.spi3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.spi3en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.spi3en().set_bit());
             }
         }
     }
@@ -497,10 +497,10 @@ impl Instance for SPI3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.spi3en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.spi3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.spi3en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.spi3en().set_bit());
             }
         }
     }
@@ -521,10 +521,10 @@ impl Instance for SPI4 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2ensetr.modify(|_, w| w.spi4en().set_bit());
+                rcc.mp_apb2ensetr().modify(|_, w| w.spi4en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2ensetr.modify(|_, w| w.spi4en().set_bit());
+                rcc.mc_apb2ensetr().modify(|_, w| w.spi4en().set_bit());
             }
         }
     }
@@ -533,10 +533,10 @@ impl Instance for SPI4 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2enclrr.modify(|_, w| w.spi4en().set_bit());
+                rcc.mp_apb2enclrr().modify(|_, w| w.spi4en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2enclrr.modify(|_, w| w.spi4en().set_bit());
+                rcc.mc_apb2enclrr().modify(|_, w| w.spi4en().set_bit());
             }
         }
     }
@@ -557,10 +557,10 @@ impl Instance for SPI5 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2ensetr.modify(|_, w| w.spi5en().set_bit());
+                rcc.mp_apb2ensetr().modify(|_, w| w.spi5en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2ensetr.modify(|_, w| w.spi5en().set_bit());
+                rcc.mc_apb2ensetr().modify(|_, w| w.spi5en().set_bit());
             }
         }
     }
@@ -569,10 +569,10 @@ impl Instance for SPI5 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2enclrr.modify(|_, w| w.spi5en().set_bit());
+                rcc.mp_apb2enclrr().modify(|_, w| w.spi5en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2enclrr.modify(|_, w| w.spi5en().set_bit());
+                rcc.mc_apb2enclrr().modify(|_, w| w.spi5en().set_bit());
             }
         }
     }
@@ -593,10 +593,10 @@ impl Instance for SPI6 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb5ensetr.modify(|_, w| w.spi6en().set_bit());
+                rcc.mp_apb5ensetr().modify(|_, w| w.spi6en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb5ensetr.modify(|_, w| w.spi6en().set_bit());
+                rcc.mc_apb5ensetr().modify(|_, w| w.spi6en().set_bit());
             }
         }
     }
@@ -605,10 +605,10 @@ impl Instance for SPI6 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb5enclrr.modify(|_, w| w.spi6en().set_bit());
+                rcc.mp_apb5enclrr().modify(|_, w| w.spi6en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb5enclrr.modify(|_, w| w.spi6en().set_bit());
+                rcc.mc_apb5enclrr().modify(|_, w| w.spi6en().set_bit());
             }
         }
     }

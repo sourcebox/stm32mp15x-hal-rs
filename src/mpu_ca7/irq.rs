@@ -430,7 +430,7 @@ pub fn init() {
     // and upload new code, we have to power cycle for it to run properly.
     unsafe {
         let gicc = &(*pac::GICC::ptr());
-        gicc.gicc_apr0.write(|w| w.bits(0));
+        gicc.apr0().write(|w| w.bits(0));
 
         asm! {
             "dsb",

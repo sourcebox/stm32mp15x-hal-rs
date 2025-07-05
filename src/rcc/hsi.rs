@@ -9,7 +9,7 @@ const HSI_FREQUENCY: u32 = 64000000;
 pub fn hsi_frequency() -> u32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        if rcc.rcc_ocrdyr.read().hsidivrdy().bit_is_set() {
+        if rcc.ocrdyr().read().hsidivrdy().bit_is_set() {
             HSI_FREQUENCY / hsi_div().value()
         } else {
             HSI_FREQUENCY
@@ -21,7 +21,7 @@ pub fn hsi_frequency() -> u32 {
 pub fn hsi_div() -> HsiDiv {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        HsiDiv::try_from(rcc.rcc_hsicfgr.read().hsidiv().bits()).unwrap()
+        HsiDiv::try_from(rcc.hsicfgr().read().hsidiv().bits()).unwrap()
     }
 }
 

@@ -43,7 +43,7 @@ where
         csi.enable();
         R::enable_clock();
         let regs = R::registers();
-        regs.rng_cr.modify(|_, w| w.ced().set_bit());
+        regs.cr().modify(|_, w| w.ced().set_bit());
         self.enable();
     }
 
@@ -57,31 +57,31 @@ where
     pub fn value(&self) -> u32 {
         while !self.is_value_ready() {}
         let regs = R::registers();
-        regs.rng_dr.read().bits()
+        regs.dr().read().bits()
     }
 
     /// Enables the peripheral.
     pub fn enable(&mut self) {
         let regs = R::registers();
-        regs.rng_cr.modify(|_, w| w.rngen().set_bit());
+        regs.cr().modify(|_, w| w.rngen().set_bit());
     }
 
     /// Disables the peripheral.
     pub fn disable(&mut self) {
         let regs = R::registers();
-        regs.rng_cr.modify(|_, w| w.rngen().clear_bit());
+        regs.cr().modify(|_, w| w.rngen().clear_bit());
     }
 
     /// Returns if the peripheral is enabled.
     pub fn is_enabled(&self) -> bool {
         let regs = R::registers();
-        regs.rng_cr.read().rngen().bit_is_set()
+        regs.cr().read().rngen().bit_is_set()
     }
 
     /// Returns if the value is ready.
     pub fn is_value_ready(&self) -> bool {
         let regs = R::registers();
-        regs.rng_sr.read().drdy().bit_is_set()
+        regs.sr().read().drdy().bit_is_set()
     }
 
     /// Returns the register block.
@@ -118,10 +118,10 @@ impl Instance for RNG1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb5ensetr.modify(|_, w| w.rng1en().set_bit());
+                rcc.mp_ahb5ensetr().modify(|_, w| w.rng1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb5ensetr.modify(|_, w| w.rng1en().set_bit());
+                rcc.mc_ahb5ensetr().modify(|_, w| w.rng1en().set_bit());
             }
         }
     }
@@ -130,10 +130,10 @@ impl Instance for RNG1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb5enclrr.modify(|_, w| w.rng1en().set_bit());
+                rcc.mp_ahb5enclrr().modify(|_, w| w.rng1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb5enclrr.modify(|_, w| w.rng1en().set_bit());
+                rcc.mc_ahb5enclrr().modify(|_, w| w.rng1en().set_bit());
             }
         }
     }
@@ -155,10 +155,10 @@ impl Instance for RNG2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb3ensetr.modify(|_, w| w.rng2en().set_bit());
+                rcc.mp_ahb3ensetr().modify(|_, w| w.rng2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb3ensetr.modify(|_, w| w.rng2en().set_bit());
+                rcc.mc_ahb3ensetr().modify(|_, w| w.rng2en().set_bit());
             }
         }
     }
@@ -167,10 +167,10 @@ impl Instance for RNG2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb3enclrr.modify(|_, w| w.rng2en().set_bit());
+                rcc.mp_ahb3enclrr().modify(|_, w| w.rng2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb3enclrr.modify(|_, w| w.rng2en().set_bit());
+                rcc.mc_ahb3enclrr().modify(|_, w| w.rng2en().set_bit());
             }
         }
     }

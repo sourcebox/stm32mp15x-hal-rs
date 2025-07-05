@@ -127,13 +127,13 @@ pub fn start_mpu1() {
         // U-boot, but if we are debugging and manually reset the code, we'll
         // want to be sure.
         let pwr = &(*pac::PWR::ptr());
-        pwr.pwr_cr1.write(|w| w.dbp().set_bit());
-        while pwr.pwr_cr1.read().dbp().bit_is_clear() {}
+        pwr.cr1().write(|w| w.dbp().set_bit());
+        while pwr.cr1().read().dbp().bit_is_clear() {}
 
         // Turn off Write protection on backup registers (BOOTROM seems to turn
         // it on for Backup registers 0-4 during MPU1 boot-up)
         let tamp = &(*pac::TAMP::ptr());
-        tamp.smcr.write(|w| {
+        tamp.smcr().write(|w| {
             w.bkprwdprot()
                 .bits(0)
                 .bkpwdprot()
@@ -148,12 +148,12 @@ pub fn start_mpu1() {
         }
 
         // Write the entry point address to TAMP backup register 5.
-        let branch_address_register = &tamp.bkpr[5];
+        let branch_address_register = &tamp.bkpr(5);
         let start_address = &mpu1_start as *const u32 as u32;
         branch_address_register.write(|w| w.bits(start_address));
 
         // Write the magic number 0xCA7FACE1 to backup register 4.
-        let magic_number_register = &tamp.bkpr[4];
+        let magic_number_register = &tamp.bkpr(4);
         magic_number_register.write(|w| w.bits(0xCA7FACE1));
     }
 
@@ -170,7 +170,7 @@ pub fn start_mpu1() {
 pub fn reset_mpu1() {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mp_grstcsetr.modify(|_, w| w.mpup1rst().set_bit());
+        rcc.mp_grstcsetr().modify(|_, w| w.mpup1rst().set_bit());
     }
 }
 
@@ -182,8 +182,8 @@ pub fn reset_mpu1() {
 pub fn start_mcu() {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mp_gcr.modify(|_, w| w.boot_mcu().set_bit());
-        rcc.rcc_mp_gcr.modify(|_, w| w.boot_mcu().clear_bit());
+        rcc.mp_gcr().modify(|_, w| w.boot_mcu().set_bit());
+        rcc.mp_gcr().modify(|_, w| w.boot_mcu().clear_bit());
     }
 }
 
@@ -193,7 +193,7 @@ pub fn start_mcu() {
 pub fn reset_mcu() {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mp_grstcsetr.modify(|_, w| w.mcurst().set_bit());
+        rcc.mp_grstcsetr().modify(|_, w| w.mcurst().set_bit());
     }
 }
 
@@ -201,7 +201,7 @@ pub fn reset_mcu() {
 pub fn reset_system() {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mp_grstcsetr.modify(|_, w| w.mpsysrst().set_bit());
+        rcc.mp_grstcsetr().modify(|_, w| w.mpsysrst().set_bit());
     }
 }
 
@@ -211,12 +211,12 @@ pub fn reset_system() {
 fn unsecure_peripherals() {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_tzcr
+        rcc.tzcr()
             .write(|w| w.tzen().clear_bit().mckprot().clear_bit());
 
         let etzpc = &(*pac::ETZPC::ptr());
-        etzpc.etzpc_tzma1_size.write(|w| w.bits(0));
-        etzpc.etzpc_decprot0.write(|w| w.bits(0xFFFFFFFF));
+        etzpc.tzma1_size().write(|w| w.bits(0));
+        etzpc.decprot0().write(|w| w.bits(0xFFFFFFFF));
     }
 }
 

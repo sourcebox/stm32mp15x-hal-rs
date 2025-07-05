@@ -18,7 +18,7 @@ const CORE_ID: u8 = crate::CPU_ID as u8;
 pub fn init() {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mp_ahb3ensetr.modify(|_, w| w.hsemen().set_bit());
+        rcc.mp_ahb3ensetr().modify(|_, w| w.hsemen().set_bit());
     }
 }
 
@@ -42,7 +42,7 @@ unsafe impl Impl for MultiCoreCriticalSection {
         let hsem = &(*pac::HSEM::ptr());
 
         loop {
-            hsem.hsem_r31.write(|w| {
+            hsem.r31().write(|w| {
                 w.coreid()
                     .bits(CORE_ID)
                     .procid()
@@ -51,7 +51,7 @@ unsafe impl Impl for MultiCoreCriticalSection {
                     .set_bit()
             });
 
-            let r = hsem.hsem_r31.read();
+            let r = hsem.r31().read();
 
             if r.coreid().bits() == CORE_ID && r.procid().bits() == proc_id && r.lock().bit_is_set()
             {
@@ -73,7 +73,7 @@ unsafe impl Impl for MultiCoreCriticalSection {
         let hsem = &(*pac::HSEM::ptr());
 
         loop {
-            hsem.hsem_r31.write(|w| {
+            hsem.r31().write(|w| {
                 w.coreid()
                     .bits(CORE_ID)
                     .procid()
@@ -82,7 +82,7 @@ unsafe impl Impl for MultiCoreCriticalSection {
                     .clear_bit()
             });
 
-            if hsem.hsem_r31.read().lock().bit_is_clear() {
+            if hsem.r31().read().lock().bit_is_clear() {
                 break;
             }
         }

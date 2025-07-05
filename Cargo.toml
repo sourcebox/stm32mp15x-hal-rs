@@ -17,7 +17,7 @@ mcu-cm4 = ["dep:cortex-m"]
 [dependencies]
 cortex-a7 = { path = "./cortex-a7", optional = true }
 cortex-m = { version = "0.7.7", optional = true }
-stm32mp1 = { version = "0.15.1", default-features = false, features = [
+stm32mp1 = { version = "0.16.0", default-features = false, features = [
     "stm32mp157",
 ] }
 critical-section = { version = "1.2.0", features = ["restore-state-u32"] }

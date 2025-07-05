@@ -8,13 +8,13 @@ use crate::pac;
 /// Returns if PLL1 is enabled.
 pub fn is_pll1_enabled() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll1cr.read().pllon().bit_is_set()
+    rcc.pll1cr().read().pllon().bit_is_set()
 }
 
 /// Returns if PLL1 is ready.
 pub fn is_pll1_ready() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll1cr.read().pll1rdy().bit_is_set()
+    rcc.pll1cr().read().pll1rdy().bit_is_set()
 }
 
 /// Returns the PLL1 clock frequency in Hz.
@@ -26,8 +26,8 @@ pub fn pll1_frequency() -> f32 {
     }
 
     let frac = pll1_fractional() as f32;
-    let pll1_n = (rcc.rcc_pll1cfgr1.read().divn().bits() + 1) as f32;
-    let pll1_m = (rcc.rcc_pll1cfgr1.read().divm1().bits() + 1) as f32;
+    let pll1_n = (rcc.pll1cfgr1().read().divn().bits() + 1) as f32;
+    let pll1_m = (rcc.pll1cfgr1().read().divm1().bits() + 1) as f32;
     let pll1_vco = pll1_n + (frac / 0x2000 as f32);
 
     match pll12_source() {
@@ -40,7 +40,7 @@ pub fn pll1_frequency() -> f32 {
 pub fn pll1_p_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll1_frequency() / (rcc.rcc_pll1cfgr2.read().divp().bits() + 1) as f32
+        pll1_frequency() / (rcc.pll1cfgr2().read().divp().bits() + 1) as f32
     }
 }
 
@@ -48,7 +48,7 @@ pub fn pll1_p_frequency() -> f32 {
 pub fn pll1_q_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll1_frequency() / (rcc.rcc_pll1cfgr2.read().divq().bits() + 1) as f32
+        pll1_frequency() / (rcc.pll1cfgr2().read().divq().bits() + 1) as f32
     }
 }
 
@@ -56,7 +56,7 @@ pub fn pll1_q_frequency() -> f32 {
 pub fn pll1_r_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll1_frequency() / (rcc.rcc_pll1cfgr2.read().divr().bits() + 1) as f32
+        pll1_frequency() / (rcc.pll1cfgr2().read().divr().bits() + 1) as f32
     }
 }
 
@@ -64,8 +64,8 @@ pub fn pll1_r_frequency() -> f32 {
 pub fn pll1_fractional() -> u16 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        if rcc.rcc_pll1fracr.read().fracle().bit_is_set() {
-            rcc.rcc_pll1fracr.read().fracv().bits()
+        if rcc.pll1fracr().read().fracle().bit_is_set() {
+            rcc.pll1fracr().read().fracv().bits()
         } else {
             0
         }
@@ -77,13 +77,13 @@ pub fn pll1_fractional() -> u16 {
 /// Returns if PLL2 is enabled.
 pub fn is_pll2_enabled() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll2cr.read().pllon().bit_is_set()
+    rcc.pll2cr().read().pllon().bit_is_set()
 }
 
 /// Returns if PLL2 is ready.
 pub fn is_pll2_ready() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll2cr.read().pll2rdy().bit_is_set()
+    rcc.pll2cr().read().pll2rdy().bit_is_set()
 }
 
 /// Returns the PLL2 clock frequency in Hz.
@@ -95,8 +95,8 @@ pub fn pll2_frequency() -> f32 {
     }
 
     let frac = pll2_fractional() as f32;
-    let pll2_n = (rcc.rcc_pll2cfgr1.read().divn().bits() + 1) as f32;
-    let pll2_m = (rcc.rcc_pll2cfgr1.read().divm2().bits() + 1) as f32;
+    let pll2_n = (rcc.pll2cfgr1().read().divn().bits() + 1) as f32;
+    let pll2_m = (rcc.pll2cfgr1().read().divm2().bits() + 1) as f32;
     let pll2_vco = pll2_n + (frac / 0x2000 as f32);
 
     match pll12_source() {
@@ -109,7 +109,7 @@ pub fn pll2_frequency() -> f32 {
 pub fn pll2_p_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll2_frequency() / (rcc.rcc_pll2cfgr2.read().divp().bits() + 1) as f32
+        pll2_frequency() / (rcc.pll2cfgr2().read().divp().bits() + 1) as f32
     }
 }
 
@@ -117,7 +117,7 @@ pub fn pll2_p_frequency() -> f32 {
 pub fn pll2_q_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll2_frequency() / (rcc.rcc_pll2cfgr2.read().divq().bits() + 1) as f32
+        pll2_frequency() / (rcc.pll2cfgr2().read().divq().bits() + 1) as f32
     }
 }
 
@@ -125,7 +125,7 @@ pub fn pll2_q_frequency() -> f32 {
 pub fn pll2_r_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll2_frequency() / (rcc.rcc_pll2cfgr2.read().divr().bits() + 1) as f32
+        pll2_frequency() / (rcc.pll2cfgr2().read().divr().bits() + 1) as f32
     }
 }
 
@@ -133,8 +133,8 @@ pub fn pll2_r_frequency() -> f32 {
 pub fn pll2_fractional() -> u16 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        if rcc.rcc_pll2fracr.read().fracle().bit_is_set() {
-            rcc.rcc_pll2fracr.read().fracv().bits()
+        if rcc.pll2fracr().read().fracle().bit_is_set() {
+            rcc.pll2fracr().read().fracv().bits()
         } else {
             0
         }
@@ -147,7 +147,7 @@ pub fn pll2_fractional() -> u16 {
 pub fn pll12_source() -> Pll12Source {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        Pll12Source::try_from(rcc.rcc_rck12selr.read().pll12src().bits()).unwrap()
+        Pll12Source::try_from(rcc.rck12selr().read().pll12src().bits()).unwrap()
     }
 }
 
@@ -186,16 +186,16 @@ impl From<Pll12Source> for u8 {
 /// Enables PLL3.
 pub fn enable_pll3() {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll3cr.modify(|_, w| w.pllon().set_bit());
-    while rcc.rcc_pll3cr.read().pll3rdy().bit_is_clear() {}
-    rcc.rcc_pll3cr
+    rcc.pll3cr().modify(|_, w| w.pllon().set_bit());
+    while rcc.pll3cr().read().pll3rdy().bit_is_clear() {}
+    rcc.pll3cr()
         .modify(|_, w| w.divren().set_bit().divqen().set_bit().divpen().set_bit());
 }
 
 /// Disables PLL3.
 pub fn disable_pll3() {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll3cr.modify(|_, w| {
+    rcc.pll3cr().modify(|_, w| {
         w.divren()
             .clear_bit()
             .divqen()
@@ -203,15 +203,15 @@ pub fn disable_pll3() {
             .divpen()
             .clear_bit()
     });
-    rcc.rcc_pll3cr.modify(|_, w| w.pllon().clear_bit());
-    while rcc.rcc_pll3cr.read().pll3rdy().bit_is_set() {}
+    rcc.pll3cr().modify(|_, w| w.pllon().clear_bit());
+    while rcc.pll3cr().read().pll3rdy().bit_is_set() {}
 }
 
 /// Sets the PLL3 source.
 pub fn set_pll3_source(source: Pll3Source) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_rck3selr
+        rcc.rck3selr()
             .modify(|_, w| w.pll3src().bits(source.into()));
     }
 }
@@ -220,7 +220,7 @@ pub fn set_pll3_source(source: Pll3Source) {
 pub fn set_pll3_input_frequency_range(freq_range: Pll3InputFreqRange) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll3cfgr1
+        rcc.pll3cfgr1()
             .modify(|_, w| w.ifrge().bits(freq_range.into()));
     }
 }
@@ -229,7 +229,7 @@ pub fn set_pll3_input_frequency_range(freq_range: Pll3InputFreqRange) {
 pub fn set_pll3_prescaler(prescaler: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll3cfgr1
+        rcc.pll3cfgr1()
             .modify(|_, w| w.divm3().bits((prescaler - 1).clamp(0x00, 0x3F)));
     }
 }
@@ -238,7 +238,7 @@ pub fn set_pll3_prescaler(prescaler: u8) {
 pub fn set_pll3_multiplier(multiplier: u16) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll3cfgr1
+        rcc.pll3cfgr1()
             .modify(|_, w| w.divn().bits((multiplier - 1).clamp(0x18, 0xC7)));
     }
 }
@@ -247,7 +247,7 @@ pub fn set_pll3_multiplier(multiplier: u16) {
 pub fn set_pll3_r_divider(divider: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll3cfgr2
+        rcc.pll3cfgr2()
             .modify(|_, w| w.divr().bits((divider - 1).clamp(0x00, 0x7F)));
     }
 }
@@ -256,7 +256,7 @@ pub fn set_pll3_r_divider(divider: u8) {
 pub fn set_pll3_q_divider(divider: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll3cfgr2
+        rcc.pll3cfgr2()
             .modify(|_, w| w.divq().bits((divider - 1).clamp(0x00, 0x7F)));
     }
 }
@@ -265,7 +265,7 @@ pub fn set_pll3_q_divider(divider: u8) {
 pub fn set_pll3_p_divider(divider: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll3cfgr2
+        rcc.pll3cfgr2()
             .modify(|_, w| w.divp().bits((divider - 1).clamp(0x00, 0x7F)));
     }
 }
@@ -274,7 +274,7 @@ pub fn set_pll3_p_divider(divider: u8) {
 pub fn set_pll3_fractional(fractional: u16) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll3fracr
+        rcc.pll3fracr()
             .modify(|_, w| w.fracv().bits(fractional).fracle().bit(fractional != 0));
     }
 }
@@ -282,13 +282,13 @@ pub fn set_pll3_fractional(fractional: u16) {
 /// Returns if PLL3 is enabled.
 pub fn is_pll3_enabled() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll3cr.read().pllon().bit_is_set()
+    rcc.pll3cr().read().pllon().bit_is_set()
 }
 
 /// Returns if PLL3 is ready.
 pub fn is_pll3_ready() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll3cr.read().pll3rdy().bit_is_set()
+    rcc.pll3cr().read().pll3rdy().bit_is_set()
 }
 
 /// Returns the PLL3 clock frequency in Hz.
@@ -300,8 +300,8 @@ pub fn pll3_frequency() -> f32 {
     }
 
     let frac = pll3_fractional() as f32;
-    let pll3_n = (rcc.rcc_pll3cfgr1.read().divn().bits() + 1) as f32;
-    let pll3_m = (rcc.rcc_pll3cfgr1.read().divm3().bits() + 1) as f32;
+    let pll3_n = (rcc.pll3cfgr1().read().divn().bits() + 1) as f32;
+    let pll3_m = (rcc.pll3cfgr1().read().divm3().bits() + 1) as f32;
     let pll3_vco = pll3_n + (frac / 0x2000 as f32);
 
     match pll3_source() {
@@ -315,7 +315,7 @@ pub fn pll3_frequency() -> f32 {
 pub fn pll3_p_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll3_frequency() / (rcc.rcc_pll3cfgr2.read().divp().bits() + 1) as f32
+        pll3_frequency() / (rcc.pll3cfgr2().read().divp().bits() + 1) as f32
     }
 }
 
@@ -323,7 +323,7 @@ pub fn pll3_p_frequency() -> f32 {
 pub fn pll3_q_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll3_frequency() / (rcc.rcc_pll3cfgr2.read().divq().bits() + 1) as f32
+        pll3_frequency() / (rcc.pll3cfgr2().read().divq().bits() + 1) as f32
     }
 }
 
@@ -331,7 +331,7 @@ pub fn pll3_q_frequency() -> f32 {
 pub fn pll3_r_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll3_frequency() / (rcc.rcc_pll3cfgr2.read().divr().bits() + 1) as f32
+        pll3_frequency() / (rcc.pll3cfgr2().read().divr().bits() + 1) as f32
     }
 }
 
@@ -339,8 +339,8 @@ pub fn pll3_r_frequency() -> f32 {
 pub fn pll3_fractional() -> u16 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        if rcc.rcc_pll3fracr.read().fracle().bit_is_set() {
-            rcc.rcc_pll3fracr.read().fracv().bits()
+        if rcc.pll3fracr().read().fracle().bit_is_set() {
+            rcc.pll3fracr().read().fracv().bits()
         } else {
             0
         }
@@ -351,7 +351,7 @@ pub fn pll3_fractional() -> u16 {
 pub fn pll3_source() -> Pll3Source {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        Pll3Source::try_from(rcc.rcc_rck3selr.read().pll3src().bits()).unwrap()
+        Pll3Source::try_from(rcc.rck3selr().read().pll3src().bits()).unwrap()
     }
 }
 
@@ -424,16 +424,16 @@ impl From<Pll3InputFreqRange> for u8 {
 /// Enables PLL4.
 pub fn enable_pll4() {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll4cr.modify(|_, w| w.pllon().set_bit());
-    while rcc.rcc_pll4cr.read().pll4rdy().bit_is_clear() {}
-    rcc.rcc_pll4cr
+    rcc.pll4cr().modify(|_, w| w.pllon().set_bit());
+    while rcc.pll4cr().read().pll4rdy().bit_is_clear() {}
+    rcc.pll4cr()
         .modify(|_, w| w.divren().set_bit().divqen().set_bit().divpen().set_bit());
 }
 
 /// Disables PLL4.
 pub fn disable_pll4() {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll4cr.modify(|_, w| {
+    rcc.pll4cr().modify(|_, w| {
         w.divren()
             .clear_bit()
             .divqen()
@@ -441,15 +441,15 @@ pub fn disable_pll4() {
             .divpen()
             .clear_bit()
     });
-    rcc.rcc_pll4cr.modify(|_, w| w.pllon().clear_bit());
-    while rcc.rcc_pll4cr.read().pll4rdy().bit_is_set() {}
+    rcc.pll4cr().modify(|_, w| w.pllon().clear_bit());
+    while rcc.pll4cr().read().pll4rdy().bit_is_set() {}
 }
 
 /// Sets the PLL4 source.
 pub fn set_pll4_source(source: Pll4Source) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_rck4selr
+        rcc.rck4selr()
             .modify(|_, w| w.pll4src().bits(source.into()));
     }
 }
@@ -458,7 +458,7 @@ pub fn set_pll4_source(source: Pll4Source) {
 pub fn set_pll4_input_frequency_range(freq_range: Pll4InputFreqRange) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll4cfgr1
+        rcc.pll4cfgr1()
             .modify(|_, w| w.ifrge().bits(freq_range.into()));
     }
 }
@@ -467,7 +467,7 @@ pub fn set_pll4_input_frequency_range(freq_range: Pll4InputFreqRange) {
 pub fn set_pll4_prescaler(prescaler: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll4cfgr1
+        rcc.pll4cfgr1()
             .modify(|_, w| w.divm4().bits((prescaler - 1).clamp(0x00, 0x3F)));
     }
 }
@@ -476,7 +476,7 @@ pub fn set_pll4_prescaler(prescaler: u8) {
 pub fn set_pll4_multiplier(multiplier: u16) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll4cfgr1
+        rcc.pll4cfgr1()
             .modify(|_, w| w.divn().bits((multiplier - 1).clamp(0x18, 0xC7)));
     }
 }
@@ -485,7 +485,7 @@ pub fn set_pll4_multiplier(multiplier: u16) {
 pub fn set_pll4_r_divider(divider: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll4cfgr2
+        rcc.pll4cfgr2()
             .modify(|_, w| w.divr().bits((divider - 1).clamp(0x00, 0x7F)));
     }
 }
@@ -494,7 +494,7 @@ pub fn set_pll4_r_divider(divider: u8) {
 pub fn set_pll4_q_divider(divider: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll4cfgr2
+        rcc.pll4cfgr2()
             .modify(|_, w| w.divq().bits((divider - 1).clamp(0x00, 0x7F)));
     }
 }
@@ -503,7 +503,7 @@ pub fn set_pll4_q_divider(divider: u8) {
 pub fn set_pll4_p_divider(divider: u8) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll4cfgr2
+        rcc.pll4cfgr2()
             .modify(|_, w| w.divp().bits((divider - 1).clamp(0x00, 0x7F)));
     }
 }
@@ -512,7 +512,7 @@ pub fn set_pll4_p_divider(divider: u8) {
 pub fn set_pll4_fractional(fractional: u16) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_pll4fracr
+        rcc.pll4fracr()
             .modify(|_, w| w.fracv().bits(fractional).fracle().bit(fractional != 0));
     }
 }
@@ -520,13 +520,13 @@ pub fn set_pll4_fractional(fractional: u16) {
 /// Returns if PLL4 is enabled.
 pub fn is_pll4_enabled() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll4cr.read().pllon().bit_is_set()
+    rcc.pll4cr().read().pllon().bit_is_set()
 }
 
 /// Returns if PLL4 is ready.
 pub fn is_pll4_ready() -> bool {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    rcc.rcc_pll4cr.read().pll4rdy().bit_is_set()
+    rcc.pll4cr().read().pll4rdy().bit_is_set()
 }
 
 /// Returns the PLL4 clock frequency in Hz.
@@ -538,8 +538,8 @@ pub fn pll4_frequency() -> f32 {
     }
 
     let frac = pll4_fractional() as f32;
-    let pll4_n = (rcc.rcc_pll4cfgr1.read().divn().bits() + 1) as f32;
-    let pll4_m = (rcc.rcc_pll4cfgr1.read().divm4().bits() + 1) as f32;
+    let pll4_n = (rcc.pll4cfgr1().read().divn().bits() + 1) as f32;
+    let pll4_m = (rcc.pll4cfgr1().read().divm4().bits() + 1) as f32;
     let pll4_vco = pll4_n + (frac / 0x2000 as f32);
 
     match pll4_source() {
@@ -554,7 +554,7 @@ pub fn pll4_frequency() -> f32 {
 pub fn pll4_p_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll4_frequency() / (rcc.rcc_pll4cfgr2.read().divp().bits() + 1) as f32
+        pll4_frequency() / (rcc.pll4cfgr2().read().divp().bits() + 1) as f32
     }
 }
 
@@ -562,7 +562,7 @@ pub fn pll4_p_frequency() -> f32 {
 pub fn pll4_q_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll4_frequency() / (rcc.rcc_pll4cfgr2.read().divq().bits() + 1) as f32
+        pll4_frequency() / (rcc.pll4cfgr2().read().divq().bits() + 1) as f32
     }
 }
 
@@ -570,7 +570,7 @@ pub fn pll4_q_frequency() -> f32 {
 pub fn pll4_r_frequency() -> f32 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        pll4_frequency() / (rcc.rcc_pll4cfgr2.read().divr().bits() + 1) as f32
+        pll4_frequency() / (rcc.pll4cfgr2().read().divr().bits() + 1) as f32
     }
 }
 
@@ -578,8 +578,8 @@ pub fn pll4_r_frequency() -> f32 {
 pub fn pll4_fractional() -> u16 {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        if rcc.rcc_pll4fracr.read().fracle().bit_is_set() {
-            rcc.rcc_pll4fracr.read().fracv().bits()
+        if rcc.pll4fracr().read().fracle().bit_is_set() {
+            rcc.pll4fracr().read().fracv().bits()
         } else {
             0
         }
@@ -590,7 +590,7 @@ pub fn pll4_fractional() -> u16 {
 pub fn pll4_source() -> Pll4Source {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        Pll4Source::try_from(rcc.rcc_rck4selr.read().pll4src().bits()).unwrap()
+        Pll4Source::try_from(rcc.rck4selr().read().pll4src().bits()).unwrap()
     }
 }
 

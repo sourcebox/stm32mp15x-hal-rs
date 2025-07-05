@@ -33,7 +33,7 @@ pub fn mpu_frequency() -> f32 {
 pub fn mpu_source() -> MpuSource {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        MpuSource::try_from(rcc.rcc_mpckselr.read().mpusrc().bits()).unwrap()
+        MpuSource::try_from(rcc.mpckselr().read().mpusrc().bits()).unwrap()
     }
 }
 
@@ -41,7 +41,7 @@ pub fn mpu_source() -> MpuSource {
 pub fn mpu_div() -> MpuDiv {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        MpuDiv::from(rcc.rcc_mpckdivr.read().mpudiv().bits())
+        MpuDiv::from(rcc.mpckdivr().read().mpudiv().bits())
     }
 }
 
@@ -151,7 +151,7 @@ pub fn aclk_frequency() -> f32 {
 pub fn axi_source() -> AxiSource {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        AxiSource::try_from(rcc.rcc_assckselr.read().axissrc().bits()).unwrap()
+        AxiSource::try_from(rcc.assckselr().read().axissrc().bits()).unwrap()
     }
 }
 
@@ -159,7 +159,7 @@ pub fn axi_source() -> AxiSource {
 pub fn axi_div() -> AxiDiv {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        AxiDiv::from(rcc.rcc_axidivr.read().axidiv().bits())
+        AxiDiv::from(rcc.axidivr().read().axidiv().bits())
     }
 }
 
@@ -250,9 +250,9 @@ impl AxiDiv {
 pub fn set_mcu_clock_source(source: McuSource) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mssckselr
+        rcc.mssckselr()
             .modify(|_, w| w.mcussrc().bits(source.into()));
-        while rcc.rcc_mssckselr.read().mcussrcrdy().bit_is_clear() {}
+        while rcc.mssckselr().read().mcussrcrdy().bit_is_clear() {}
     }
 }
 
@@ -271,7 +271,7 @@ pub fn mcu_frequency() -> f32 {
 pub fn mcu_source() -> McuSource {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        McuSource::try_from(rcc.rcc_mssckselr.read().mcussrc().bits()).unwrap()
+        McuSource::try_from(rcc.mssckselr().read().mcussrc().bits()).unwrap()
     }
 }
 
@@ -279,7 +279,7 @@ pub fn mcu_source() -> McuSource {
 pub fn mcu_div() -> McuDiv {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        McuDiv::from(rcc.rcc_mcudivr.read().mcudiv().bits())
+        McuDiv::from(rcc.mcudivr().read().mcudiv().bits())
     }
 }
 
@@ -403,7 +403,7 @@ impl McuDiv {
 /// Returns the PCLK1 frequency in Hz.
 pub fn pclk1_frequency() -> f32 {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    let divider = ApbDiv::try_from(rcc.rcc_apb1divr.read().apb1div().bits())
+    let divider = ApbDiv::try_from(rcc.apb1divr().read().apb1div().bits())
         .unwrap()
         .value();
     mcu_frequency() / divider as f32
@@ -412,7 +412,7 @@ pub fn pclk1_frequency() -> f32 {
 /// Returns the PCLK2 frequency in Hz.
 pub fn pclk2_frequency() -> f32 {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    let divider = ApbDiv::try_from(rcc.rcc_apb2divr.read().apb2div().bits())
+    let divider = ApbDiv::try_from(rcc.apb2divr().read().apb2div().bits())
         .unwrap()
         .value();
     mcu_frequency() / divider as f32
@@ -421,7 +421,7 @@ pub fn pclk2_frequency() -> f32 {
 /// Returns the PCLK3 frequency in Hz.
 pub fn pclk3_frequency() -> f32 {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    let divider = ApbDiv::try_from(rcc.rcc_apb3divr.read().apb3div().bits())
+    let divider = ApbDiv::try_from(rcc.apb3divr().read().apb3div().bits())
         .unwrap()
         .value();
     mcu_frequency() / divider as f32
@@ -430,7 +430,7 @@ pub fn pclk3_frequency() -> f32 {
 /// Returns the PCLK4 frequency in Hz.
 pub fn pclk4_frequency() -> f32 {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    let divider = ApbDiv::try_from(rcc.rcc_apb4divr.read().apb4div().bits())
+    let divider = ApbDiv::try_from(rcc.apb4divr().read().apb4div().bits())
         .unwrap()
         .value();
     aclk_frequency() / divider as f32
@@ -439,7 +439,7 @@ pub fn pclk4_frequency() -> f32 {
 /// Returns the PCLK5 frequency in Hz.
 pub fn pclk5_frequency() -> f32 {
     let rcc = unsafe { &(*pac::RCC::ptr()) };
-    let divider = ApbDiv::try_from(rcc.rcc_apb5divr.read().apb5div().bits())
+    let divider = ApbDiv::try_from(rcc.apb5divr().read().apb5div().bits())
         .unwrap()
         .value();
     aclk_frequency() / divider as f32
@@ -449,7 +449,7 @@ pub fn pclk5_frequency() -> f32 {
 pub fn set_apb1_div(divider: ApbDiv) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_apb1divr
+        rcc.apb1divr()
             .modify(|_, w| w.apb1div().bits(divider.into()));
     }
 }
@@ -458,7 +458,7 @@ pub fn set_apb1_div(divider: ApbDiv) {
 pub fn set_apb2_div(divider: ApbDiv) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_apb2divr
+        rcc.apb2divr()
             .modify(|_, w| w.apb2div().bits(divider.into()));
     }
 }
@@ -467,7 +467,7 @@ pub fn set_apb2_div(divider: ApbDiv) {
 pub fn set_apb3_div(divider: ApbDiv) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_apb3divr
+        rcc.apb3divr()
             .modify(|_, w| w.apb3div().bits(divider.into()));
     }
 }
@@ -476,7 +476,7 @@ pub fn set_apb3_div(divider: ApbDiv) {
 pub fn set_apb4_div(divider: ApbDiv) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_apb4divr
+        rcc.apb4divr()
             .modify(|_, w| w.apb4div().bits(divider.into()));
     }
 }
@@ -485,7 +485,7 @@ pub fn set_apb4_div(divider: ApbDiv) {
 pub fn set_apb5_div(divider: ApbDiv) {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_apb5divr
+        rcc.apb5divr()
             .modify(|_, w| w.apb5div().bits(divider.into()));
     }
 }
@@ -561,7 +561,7 @@ pub fn per_ck_frequency() -> f32 {
 pub fn per_source() -> PerSource {
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        PerSource::try_from(rcc.rcc_cperckselr.read().ckpersrc().bits()).unwrap()
+        PerSource::try_from(rcc.cperckselr().read().ckpersrc().bits()).unwrap()
     }
 }
 

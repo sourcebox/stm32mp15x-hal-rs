@@ -204,7 +204,7 @@ where
 
         let regs = R::registers();
 
-        regs.cr1.modify(|_, w| {
+        regs.cr1().modify(|_, w| {
             w.te()
                 .bit(config.transmitter_enable)
                 .re()
@@ -224,9 +224,9 @@ where
         });
 
         unsafe {
-            regs.cr2
+            regs.cr2()
                 .modify(|_, w| w.stop().bits(config.stop_bits.into()));
-            regs.brr.write(|w| w.bits(brr));
+            regs.brr().write(|w| w.bits(brr));
         }
 
         self.enable();
@@ -267,7 +267,7 @@ where
         }
 
         let regs = R::registers();
-        Ok((regs.rdr.read().bits() & 0xFF) as u8)
+        Ok((regs.rdr().read().bits() & 0xFF) as u8)
     }
 
     /// Writes received bytes into a buffer, blocks if none available.
@@ -307,7 +307,7 @@ where
         }
 
         let regs = R::registers();
-        Ok((regs.rdr.read().bits() & 0xFF) as u8)
+        Ok((regs.rdr().read().bits() & 0xFF) as u8)
     }
 
     /// Writes bytes from a buffer, blocking.
@@ -315,7 +315,7 @@ where
         unsafe {
             for byte in buffer {
                 let regs = R::registers();
-                regs.tdr.write(|w| w.bits(*byte as u32));
+                regs.tdr().write(|w| w.bits(*byte as u32));
                 while !self.is_transmitter_empty() {}
             }
         }
@@ -327,7 +327,7 @@ where
         unsafe {
             for byte in buffer {
                 let regs = R::registers();
-                regs.tdr.write(|w| w.bits(*byte as u32));
+                regs.tdr().write(|w| w.bits(*byte as u32));
                 self.wait_for_transmitter_empty_async().await;
             }
         }
@@ -337,110 +337,110 @@ where
     /// Enables the peripheral.
     pub fn enable(&mut self) {
         let regs = R::registers();
-        regs.cr1.modify(|_, w| w.ue().set_bit());
+        regs.cr1().modify(|_, w| w.ue().set_bit());
     }
 
     /// Disables the peripheral.
     pub fn disable(&mut self) {
         let regs = R::registers();
-        regs.cr1.modify(|_, w| w.ue().clear_bit());
+        regs.cr1().modify(|_, w| w.ue().clear_bit());
     }
 
     /// Returns if the peripheral is enabled.
     pub fn is_enabled(&self) -> bool {
         let regs = R::registers();
-        regs.cr1.read().ue().bit_is_set()
+        regs.cr1().read().ue().bit_is_set()
     }
 
     /// Returns if the transmitter is enabled.
     pub fn is_transmitter_enabled(&self) -> bool {
         let regs = R::registers();
-        regs.cr1.read().te().bit_is_set()
+        regs.cr1().read().te().bit_is_set()
     }
 
     /// Returns if the receiver is enabled.
     pub fn is_receiver_enabled(&self) -> bool {
         let regs = R::registers();
-        regs.cr1.read().re().bit_is_set()
+        regs.cr1().read().re().bit_is_set()
     }
 
     /// Returns if the transmitter is empty.
     pub fn is_transmitter_empty(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().txe().bit_is_set()
+        regs.isr().read().txe().bit_is_set()
     }
 
     /// Returns if the receiver is not empty.
     pub fn is_receiver_not_empty(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().rxne().bit_is_set()
+        regs.isr().read().rxne().bit_is_set()
     }
 
     /// Returns if the transfer is complete.
     pub fn is_transfer_complete(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().tc().bit_is_set()
+        regs.isr().read().tc().bit_is_set()
     }
 
     /// Returns if the line is idle.
     pub fn is_idle(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().idle().bit_is_set()
+        regs.isr().read().idle().bit_is_set()
     }
 
     /// Returns if a parity error has occurred.
     pub fn is_parity_error(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().pe().bit_is_set()
+        regs.isr().read().pe().bit_is_set()
     }
 
     /// Returns if a framing error has occurred.
     pub fn is_framing_error(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().fe().bit_is_set()
+        regs.isr().read().fe().bit_is_set()
     }
 
     /// Returns if an overrun error has occurred.
     pub fn is_overrun_error(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().ore().bit_is_set()
+        regs.isr().read().ore().bit_is_set()
     }
 
     /// Returns if noise was detected on a received frame.
     pub fn is_noise_detected(&self) -> bool {
         let regs = R::registers();
-        regs.isr.read().nf().bit_is_set()
+        regs.isr().read().nf().bit_is_set()
     }
 
     /// Clears a parity error.
     pub fn clear_parity_error(&mut self) {
         let regs = R::registers();
-        regs.icr.write(|w| w.pecf().set_bit());
+        regs.icr().write(|w| w.pecf().set_bit());
     }
 
     /// Clears a framing error.
     pub fn clear_framing_error(&mut self) {
         let regs = R::registers();
-        regs.icr.write(|w| w.fecf().set_bit());
+        regs.icr().write(|w| w.fecf().set_bit());
     }
 
     /// Clears an overrun error.
     pub fn clear_overrun_error(&mut self) {
         let regs = R::registers();
-        regs.icr.write(|w| w.orecf().set_bit());
+        regs.icr().write(|w| w.orecf().set_bit());
     }
 
     /// Clears a detected noise condition.
     pub fn clear_noise_detected(&mut self) {
         let regs = R::registers();
-        regs.icr.write(|w| w.ncf().set_bit());
+        regs.icr().write(|w| w.ncf().set_bit());
     }
 
     /// Asynchronuously wait for transmitter empty.
     pub async fn wait_for_transmitter_empty_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.isr.read().txe().bit_is_clear() {
+            if regs.isr().read().txe().bit_is_clear() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -454,7 +454,7 @@ where
     pub async fn wait_for_receiver_not_empty_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.isr.read().rxne().bit_is_clear() {
+            if regs.isr().read().rxne().bit_is_clear() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -467,7 +467,7 @@ where
     pub async fn wait_for_transfer_complete_async(&self) {
         poll_fn(|cx| {
             let regs = R::registers();
-            if regs.isr.read().tc().bit_is_clear() {
+            if regs.isr().read().tc().bit_is_clear() {
                 cx.waker().wake_by_ref();
                 Poll::Pending
             } else {
@@ -511,10 +511,10 @@ impl Instance for USART1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb5ensetr.modify(|_, w| w.usart1en().set_bit());
+                rcc.mp_apb5ensetr().modify(|_, w| w.usart1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb5ensetr.modify(|_, w| w.usart1en().set_bit());
+                rcc.mc_apb5ensetr().modify(|_, w| w.usart1en().set_bit());
             }
         }
     }
@@ -523,10 +523,10 @@ impl Instance for USART1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb5enclrr.modify(|_, w| w.usart1en().set_bit());
+                rcc.mp_apb5enclrr().modify(|_, w| w.usart1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb5enclrr.modify(|_, w| w.usart1en().set_bit());
+                rcc.mc_apb5enclrr().modify(|_, w| w.usart1en().set_bit());
             }
         }
     }
@@ -547,10 +547,10 @@ impl Instance for USART2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.usart2en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.usart2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.usart2en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.usart2en().set_bit());
             }
         }
     }
@@ -559,10 +559,10 @@ impl Instance for USART2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.usart2en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.usart2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.usart2en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.usart2en().set_bit());
             }
         }
     }
@@ -583,10 +583,10 @@ impl Instance for USART3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.usart3en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.usart3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.usart3en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.usart3en().set_bit());
             }
         }
     }
@@ -595,10 +595,10 @@ impl Instance for USART3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.usart3en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.usart3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.usart3en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.usart3en().set_bit());
             }
         }
     }
@@ -619,10 +619,10 @@ impl Instance for USART4 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.uart4en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.uart4en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.uart4en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.uart4en().set_bit());
             }
         }
     }
@@ -631,10 +631,10 @@ impl Instance for USART4 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.uart4en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.uart4en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.uart4en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.uart4en().set_bit());
             }
         }
     }
@@ -655,10 +655,10 @@ impl Instance for USART5 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.uart5en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.uart5en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.uart5en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.uart5en().set_bit());
             }
         }
     }
@@ -667,10 +667,10 @@ impl Instance for USART5 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.uart5en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.uart5en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.uart5en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.uart5en().set_bit());
             }
         }
     }
@@ -691,10 +691,10 @@ impl Instance for USART6 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2ensetr.modify(|_, w| w.usart6en().set_bit());
+                rcc.mp_apb2ensetr().modify(|_, w| w.usart6en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2ensetr.modify(|_, w| w.usart6en().set_bit());
+                rcc.mc_apb2ensetr().modify(|_, w| w.usart6en().set_bit());
             }
         }
     }
@@ -703,10 +703,10 @@ impl Instance for USART6 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb2enclrr.modify(|_, w| w.usart6en().set_bit());
+                rcc.mp_apb2enclrr().modify(|_, w| w.usart6en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb2enclrr.modify(|_, w| w.usart6en().set_bit());
+                rcc.mc_apb2enclrr().modify(|_, w| w.usart6en().set_bit());
             }
         }
     }
@@ -727,10 +727,10 @@ impl Instance for USART7 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.uart7en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.uart7en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.uart7en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.uart7en().set_bit());
             }
         }
     }
@@ -739,10 +739,10 @@ impl Instance for USART7 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.uart7en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.uart7en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.uart7en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.uart7en().set_bit());
             }
         }
     }
@@ -763,10 +763,10 @@ impl Instance for USART8 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1ensetr.modify(|_, w| w.uart8en().set_bit());
+                rcc.mp_apb1ensetr().modify(|_, w| w.uart8en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1ensetr.modify(|_, w| w.uart8en().set_bit());
+                rcc.mc_apb1ensetr().modify(|_, w| w.uart8en().set_bit());
             }
         }
     }
@@ -775,10 +775,10 @@ impl Instance for USART8 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_apb1enclrr.modify(|_, w| w.uart8en().set_bit());
+                rcc.mp_apb1enclrr().modify(|_, w| w.uart8en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_apb1enclrr.modify(|_, w| w.uart8en().set_bit());
+                rcc.mc_apb1enclrr().modify(|_, w| w.uart8en().set_bit());
             }
         }
     }

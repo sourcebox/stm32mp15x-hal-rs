@@ -137,18 +137,18 @@ impl Port {
             value.subvalue(start_pin, pin_count) | value.subvalue(start_pin + 16, pin_count);
         unsafe {
             match self {
-                Port::A => &(*pac::GPIOA::ptr()).gpioa_bsrr.write(|w| w.bits(value)),
-                Port::B => &(*pac::GPIOB::ptr()).gpiob_bsrr.write(|w| w.bits(value)),
-                Port::C => &(*pac::GPIOC::ptr()).gpioc_bsrr.write(|w| w.bits(value)),
-                Port::D => &(*pac::GPIOD::ptr()).gpiod_bsrr.write(|w| w.bits(value)),
-                Port::E => &(*pac::GPIOE::ptr()).gpioe_bsrr.write(|w| w.bits(value)),
-                Port::F => &(*pac::GPIOF::ptr()).gpiof_bsrr.write(|w| w.bits(value)),
-                Port::G => &(*pac::GPIOG::ptr()).gpiog_bsrr.write(|w| w.bits(value)),
-                Port::H => &(*pac::GPIOH::ptr()).gpioh_bsrr.write(|w| w.bits(value)),
-                Port::I => &(*pac::GPIOI::ptr()).gpioi_bsrr.write(|w| w.bits(value)),
-                Port::J => &(*pac::GPIOJ::ptr()).gpioj_bsrr.write(|w| w.bits(value)),
-                Port::K => &(*pac::GPIOK::ptr()).gpiok_bsrr.write(|w| w.bits(value)),
-                Port::Z => &(*pac::GPIOZ::ptr()).gpioz_bsrr.write(|w| w.bits(value)),
+                Port::A => &(*pac::GPIOA::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::B => &(*pac::GPIOB::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::C => &(*pac::GPIOC::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::D => &(*pac::GPIOD::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::E => &(*pac::GPIOE::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::F => &(*pac::GPIOF::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::G => &(*pac::GPIOG::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::H => &(*pac::GPIOH::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::I => &(*pac::GPIOI::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::J => &(*pac::GPIOJ::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::K => &(*pac::GPIOK::ptr()).bsrr().write(|w| w.bits(value)),
+                Port::Z => &(*pac::GPIOZ::ptr()).bsrr().write(|w| w.bits(value)),
             };
         }
     }
@@ -159,18 +159,18 @@ impl Port {
     pub fn get_bus_input(&self, start_pin: u8, pin_count: u8) -> u32 {
         let value = unsafe {
             match self {
-                Port::A => (*pac::GPIOA::ptr()).gpioa_idr.read().bits(),
-                Port::B => (*pac::GPIOB::ptr()).gpiob_idr.read().bits(),
-                Port::C => (*pac::GPIOC::ptr()).gpioc_idr.read().bits(),
-                Port::D => (*pac::GPIOD::ptr()).gpiod_idr.read().bits(),
-                Port::E => (*pac::GPIOE::ptr()).gpioe_idr.read().bits(),
-                Port::F => (*pac::GPIOF::ptr()).gpiof_idr.read().bits(),
-                Port::G => (*pac::GPIOG::ptr()).gpiog_idr.read().bits(),
-                Port::H => (*pac::GPIOH::ptr()).gpioh_idr.read().bits(),
-                Port::I => (*pac::GPIOI::ptr()).gpioi_idr.read().bits(),
-                Port::J => (*pac::GPIOJ::ptr()).gpioj_idr.read().bits(),
-                Port::K => (*pac::GPIOK::ptr()).gpiok_idr.read().bits(),
-                Port::Z => (*pac::GPIOZ::ptr()).gpioz_idr.read().bits(),
+                Port::A => (*pac::GPIOA::ptr()).idr().read().bits(),
+                Port::B => (*pac::GPIOB::ptr()).idr().read().bits(),
+                Port::C => (*pac::GPIOC::ptr()).idr().read().bits(),
+                Port::D => (*pac::GPIOD::ptr()).idr().read().bits(),
+                Port::E => (*pac::GPIOE::ptr()).idr().read().bits(),
+                Port::F => (*pac::GPIOF::ptr()).idr().read().bits(),
+                Port::G => (*pac::GPIOG::ptr()).idr().read().bits(),
+                Port::H => (*pac::GPIOH::ptr()).idr().read().bits(),
+                Port::I => (*pac::GPIOI::ptr()).idr().read().bits(),
+                Port::J => (*pac::GPIOJ::ptr()).idr().read().bits(),
+                Port::K => (*pac::GPIOK::ptr()).idr().read().bits(),
+                Port::Z => (*pac::GPIOZ::ptr()).idr().read().bits(),
             }
         };
         BitWorker::new(value).subvalue(start_pin, pin_count)
@@ -238,62 +238,62 @@ impl Pin {
         match self.port {
             Port::A => unsafe {
                 let regs = &(*pac::GPIOA::ptr());
-                regs.gpioa_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::B => unsafe {
                 let regs = &(*pac::GPIOB::ptr());
-                regs.gpiob_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::C => unsafe {
                 let regs = &(*pac::GPIOC::ptr());
-                regs.gpioc_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::D => unsafe {
                 let regs = &(*pac::GPIOD::ptr());
-                regs.gpiod_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::E => unsafe {
                 let regs = &(*pac::GPIOE::ptr());
-                regs.gpioe_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::F => unsafe {
                 let regs = &(*pac::GPIOF::ptr());
-                regs.gpiof_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::G => unsafe {
                 let regs = &(*pac::GPIOG::ptr());
-                regs.gpiog_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::H => unsafe {
                 let regs = &(*pac::GPIOH::ptr());
-                regs.gpioh_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::I => unsafe {
                 let regs = &(*pac::GPIOI::ptr());
-                regs.gpioi_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::J => unsafe {
                 let regs = &(*pac::GPIOJ::ptr());
-                regs.gpioj_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::K => unsafe {
                 let regs = &(*pac::GPIOK::ptr());
-                regs.gpiok_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
             Port::Z => unsafe {
                 let regs = &(*pac::GPIOZ::ptr());
-                regs.gpioz_moder
+                regs.moder()
                     .modify(|r, w| w.bits(modr(r.bits(), self.pin, mode)));
             },
         }
@@ -309,51 +309,51 @@ impl Pin {
         match self.port {
             Port::A => unsafe {
                 let regs = &(*pac::GPIOA::ptr());
-                idr(regs.gpioa_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::B => unsafe {
                 let regs = &(*pac::GPIOB::ptr());
-                idr(regs.gpiob_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::C => unsafe {
                 let regs = &(*pac::GPIOC::ptr());
-                idr(regs.gpioc_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::D => unsafe {
                 let regs = &(*pac::GPIOD::ptr());
-                idr(regs.gpiod_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::E => unsafe {
                 let regs = &(*pac::GPIOE::ptr());
-                idr(regs.gpioe_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::F => unsafe {
                 let regs = &(*pac::GPIOF::ptr());
-                idr(regs.gpiof_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::G => unsafe {
                 let regs = &(*pac::GPIOG::ptr());
-                idr(regs.gpiog_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::H => unsafe {
                 let regs = &(*pac::GPIOH::ptr());
-                idr(regs.gpioh_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::I => unsafe {
                 let regs = &(*pac::GPIOI::ptr());
-                idr(regs.gpioi_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::J => unsafe {
                 let regs = &(*pac::GPIOJ::ptr());
-                idr(regs.gpioj_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::K => unsafe {
                 let regs = &(*pac::GPIOK::ptr());
-                idr(regs.gpiok_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
             Port::Z => unsafe {
                 let regs = &(*pac::GPIOZ::ptr());
-                idr(regs.gpioz_idr.read().bits(), self.pin)
+                idr(regs.idr().read().bits(), self.pin)
             },
         }
     }
@@ -363,63 +363,51 @@ impl Pin {
         match self.port {
             Port::A => unsafe {
                 let regs = &(*pac::GPIOA::ptr());
-                regs.gpioa_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::B => unsafe {
                 let regs = &(*pac::GPIOB::ptr());
-                regs.gpiob_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::C => unsafe {
                 let regs = &(*pac::GPIOC::ptr());
-                regs.gpioc_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::D => unsafe {
                 let regs = &(*pac::GPIOD::ptr());
-                regs.gpiod_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::E => unsafe {
                 let regs = &(*pac::GPIOE::ptr());
-                regs.gpioe_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::F => unsafe {
                 let regs = &(*pac::GPIOF::ptr());
-                regs.gpiof_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::G => unsafe {
                 let regs = &(*pac::GPIOG::ptr());
-                regs.gpiog_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::H => unsafe {
                 let regs = &(*pac::GPIOH::ptr());
-                regs.gpioh_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::I => unsafe {
                 let regs = &(*pac::GPIOI::ptr());
-                regs.gpioi_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::J => unsafe {
                 let regs = &(*pac::GPIOJ::ptr());
-                regs.gpioj_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::K => unsafe {
                 let regs = &(*pac::GPIOK::ptr());
-                regs.gpiok_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
             Port::Z => unsafe {
                 let regs = &(*pac::GPIOZ::ptr());
-                regs.gpioz_bsrr
-                    .write(|w| w.bits(bsrr(self.pin, state.into())))
+                regs.bsrr().write(|w| w.bits(bsrr(self.pin, state.into())));
             },
         }
     }
@@ -429,63 +417,63 @@ impl Pin {
         match self.port {
             Port::A => unsafe {
                 let regs = &(*pac::GPIOA::ptr());
-                regs.gpioa_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::B => unsafe {
                 let regs = &(*pac::GPIOB::ptr());
-                regs.gpiob_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::C => unsafe {
                 let regs = &(*pac::GPIOC::ptr());
-                regs.gpioc_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::D => unsafe {
                 let regs = &(*pac::GPIOD::ptr());
-                regs.gpiod_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::E => unsafe {
                 let regs = &(*pac::GPIOE::ptr());
-                regs.gpioe_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::F => unsafe {
                 let regs = &(*pac::GPIOF::ptr());
-                regs.gpiof_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::G => unsafe {
                 let regs = &(*pac::GPIOG::ptr());
-                regs.gpiog_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::H => unsafe {
                 let regs = &(*pac::GPIOH::ptr());
-                regs.gpioh_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::I => unsafe {
                 let regs = &(*pac::GPIOI::ptr());
-                regs.gpioi_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::J => unsafe {
                 let regs = &(*pac::GPIOJ::ptr());
-                regs.gpioj_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::K => unsafe {
                 let regs = &(*pac::GPIOK::ptr());
-                regs.gpiok_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
             Port::Z => unsafe {
                 let regs = &(*pac::GPIOZ::ptr());
-                regs.gpioz_ospeedr
-                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)))
+                regs.ospeedr()
+                    .modify(|r, w| w.bits(ospeedr(r.bits(), self.pin, output_speed)));
             },
         }
     }
@@ -495,63 +483,63 @@ impl Pin {
         match self.port {
             Port::A => unsafe {
                 let regs = &(*pac::GPIOA::ptr());
-                regs.gpioa_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::B => unsafe {
                 let regs = &(*pac::GPIOB::ptr());
-                regs.gpiob_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::C => unsafe {
                 let regs = &(*pac::GPIOC::ptr());
-                regs.gpioc_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::D => unsafe {
                 let regs = &(*pac::GPIOD::ptr());
-                regs.gpiod_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::E => unsafe {
                 let regs = &(*pac::GPIOE::ptr());
-                regs.gpioe_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::F => unsafe {
                 let regs = &(*pac::GPIOF::ptr());
-                regs.gpiof_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::G => unsafe {
                 let regs = &(*pac::GPIOG::ptr());
-                regs.gpiog_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::H => unsafe {
                 let regs = &(*pac::GPIOH::ptr());
-                regs.gpioh_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::I => unsafe {
                 let regs = &(*pac::GPIOI::ptr());
-                regs.gpioi_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::J => unsafe {
                 let regs = &(*pac::GPIOJ::ptr());
-                regs.gpioj_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::K => unsafe {
                 let regs = &(*pac::GPIOK::ptr());
-                regs.gpiok_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
             Port::Z => unsafe {
                 let regs = &(*pac::GPIOZ::ptr());
-                regs.gpioz_otyper
-                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)))
+                regs.otyper()
+                    .modify(|r, w| w.bits(otyper(r.bits(), self.pin, output_type)));
             },
         }
     }
@@ -561,63 +549,63 @@ impl Pin {
         match self.port {
             Port::A => unsafe {
                 let regs = &(*pac::GPIOA::ptr());
-                regs.gpioa_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::B => unsafe {
                 let regs = &(*pac::GPIOB::ptr());
-                regs.gpiob_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::C => unsafe {
                 let regs = &(*pac::GPIOC::ptr());
-                regs.gpioc_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::D => unsafe {
                 let regs = &(*pac::GPIOD::ptr());
-                regs.gpiod_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::E => unsafe {
                 let regs = &(*pac::GPIOE::ptr());
-                regs.gpioe_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::F => unsafe {
                 let regs = &(*pac::GPIOF::ptr());
-                regs.gpiof_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::G => unsafe {
                 let regs = &(*pac::GPIOG::ptr());
-                regs.gpiog_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::H => unsafe {
                 let regs = &(*pac::GPIOH::ptr());
-                regs.gpioh_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::I => unsafe {
                 let regs = &(*pac::GPIOI::ptr());
-                regs.gpioi_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::J => unsafe {
                 let regs = &(*pac::GPIOJ::ptr());
-                regs.gpioj_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::K => unsafe {
                 let regs = &(*pac::GPIOK::ptr());
-                regs.gpiok_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
             Port::Z => unsafe {
                 let regs = &(*pac::GPIOZ::ptr());
-                regs.gpioz_pupdr
-                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)))
+                regs.pupdr()
+                    .modify(|r, w| w.bits(pupdr(r.bits(), self.pin, pull_mode)));
             },
         }
     }
@@ -628,124 +616,124 @@ impl Pin {
             Port::A => unsafe {
                 let regs = &(*pac::GPIOA::ptr());
                 if self.pin < 8 {
-                    regs.gpioa_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpioa_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::B => unsafe {
                 let regs = &(*pac::GPIOB::ptr());
                 if self.pin < 8 {
-                    regs.gpiob_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpiob_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::C => unsafe {
                 let regs = &(*pac::GPIOC::ptr());
                 if self.pin < 8 {
-                    regs.gpioc_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpioc_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::D => unsafe {
                 let regs = &(*pac::GPIOD::ptr());
                 if self.pin < 8 {
-                    regs.gpiod_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpiod_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::E => unsafe {
                 let regs = &(*pac::GPIOE::ptr());
                 if self.pin < 8 {
-                    regs.gpioe_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpioe_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::F => unsafe {
                 let regs = &(*pac::GPIOF::ptr());
                 if self.pin < 8 {
-                    regs.gpiof_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpiof_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::G => unsafe {
                 let regs = &(*pac::GPIOG::ptr());
                 if self.pin < 8 {
-                    regs.gpiog_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpiog_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::H => unsafe {
                 let regs = &(*pac::GPIOH::ptr());
                 if self.pin < 8 {
-                    regs.gpioh_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpioh_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::I => unsafe {
                 let regs = &(*pac::GPIOI::ptr());
                 if self.pin < 8 {
-                    regs.gpioi_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpioi_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::J => unsafe {
                 let regs = &(*pac::GPIOJ::ptr());
                 if self.pin < 8 {
-                    regs.gpioj_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpioj_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::K => unsafe {
                 let regs = &(*pac::GPIOK::ptr());
                 if self.pin < 8 {
-                    regs.gpiok_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpiok_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
             Port::Z => unsafe {
                 let regs = &(*pac::GPIOZ::ptr());
                 if self.pin < 8 {
-                    regs.gpioz_afrl
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)))
+                    regs.afrl()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin, af)));
                 } else if self.pin < 16 {
-                    regs.gpioz_afrh
-                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)))
+                    regs.afrh()
+                        .modify(|r, w| w.bits(afr(r.bits(), self.pin - 8, af)));
                 }
             },
-        }
+        };
     }
 }
 
@@ -799,7 +787,7 @@ pub fn init() {
     #[cfg(feature = "mpu-ca7")]
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mp_ahb4ensetr.modify(|_, w| {
+        rcc.mp_ahb4ensetr().modify(|_, w| {
             w.gpioaen()
                 .set_bit()
                 .gpioben()
@@ -828,7 +816,7 @@ pub fn init() {
     #[cfg(feature = "mcu-cm4")]
     unsafe {
         let rcc = &(*pac::RCC::ptr());
-        rcc.rcc_mc_ahb4ensetr.modify(|_, w| {
+        rcc.mc_ahb4ensetr().modify(|_, w| {
             w.gpioaen()
                 .set_bit()
                 .gpioben()

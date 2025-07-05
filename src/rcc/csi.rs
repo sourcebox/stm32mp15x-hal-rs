@@ -19,7 +19,7 @@ impl Csi {
     pub fn enable(&mut self) {
         unsafe {
             let rcc = &(*pac::RCC::ptr());
-            rcc.rcc_ocensetr.modify(|_, w| w.csion().set_bit());
+            rcc.ocensetr().modify(|_, w| w.csion().set_bit());
         }
     }
 
@@ -27,7 +27,7 @@ impl Csi {
     pub fn disable(&mut self) {
         unsafe {
             let rcc = &(*pac::RCC::ptr());
-            rcc.rcc_ocenclrr.modify(|_, w| w.csion().set_bit());
+            rcc.ocenclrr().modify(|_, w| w.csion().set_bit());
         }
     }
 
@@ -35,7 +35,7 @@ impl Csi {
     pub fn is_enabled(&self) -> bool {
         unsafe {
             let rcc = &(*pac::RCC::ptr());
-            rcc.rcc_ocensetr.read().csion().bit_is_set()
+            rcc.ocensetr().read().csion().bit_is_set()
         }
     }
 
@@ -43,7 +43,7 @@ impl Csi {
     pub fn is_ready(&self) -> bool {
         unsafe {
             let rcc = &(*pac::RCC::ptr());
-            rcc.rcc_ocrdyr.read().csirdy().bit_is_set()
+            rcc.ocrdyr().read().csirdy().bit_is_set()
         }
     }
 

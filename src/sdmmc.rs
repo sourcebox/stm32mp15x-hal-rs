@@ -198,7 +198,7 @@ where
         let regs = R::registers();
 
         unsafe {
-            regs.sdmmc_clkcr.modify(|_, w| {
+            regs.clkcr().modify(|_, w| {
                 w.pwrsav()
                     .bit(config.clock_power_save)
                     .widbus()
@@ -214,8 +214,8 @@ where
                     .selclkrx()
                     .bits(0b00)
             });
-            regs.sdmmc_cmdr.write(|w| w.bits(0));
-            regs.sdmmc_argr.write(|w| w.bits(0));
+            regs.cmdr().write(|w| w.bits(0));
+            regs.argr().write(|w| w.bits(0));
         }
 
         self.set_clock_frequency(config.init_clock_frequency);
@@ -373,8 +373,8 @@ where
         let regs = R::registers();
 
         unsafe {
-            regs.sdmmc_dlenr.write(|w| w.datalength().bits(512));
-            regs.sdmmc_dctrl
+            regs.dlenr().write(|w| w.datalength().bits(512));
+            regs.dctrl()
                 .write(|w| w.dblocksize().bits(9).dtdir().set_bit());
         }
 
@@ -400,7 +400,7 @@ where
 
             if self.is_receiver_half_full() {
                 for _ in 0..8 {
-                    let bytes = regs.sdmmc_fifor0.read().bits().to_le_bytes();
+                    let bytes = regs.fifor0().read().bits().to_le_bytes();
                     buffer[i..i + 4].copy_from_slice(&bytes);
                     i += 4;
                 }
@@ -415,7 +415,7 @@ where
         let clk_div = (R::clock_frequency() as u32 / frequency / 2) as u16;
         unsafe {
             let regs = R::registers();
-            regs.sdmmc_clkcr.modify(|_, w| w.clkdiv().bits(clk_div));
+            regs.clkcr().modify(|_, w| w.clkdiv().bits(clk_div));
         }
     }
 
@@ -423,7 +423,7 @@ where
     pub fn set_data_timeout(&mut self, timeout: u32) {
         unsafe {
             let regs = R::registers();
-            regs.sdmmc_dtimer.write(|w| w.bits(timeout));
+            regs.dtimer().write(|w| w.bits(timeout));
         }
     }
 
@@ -438,8 +438,8 @@ where
 
         unsafe {
             let regs = R::registers();
-            regs.sdmmc_argr.write(|w| w.bits(config.argument));
-            regs.sdmmc_cmdr.modify(|_, w| {
+            regs.argr().write(|w| w.bits(config.argument));
+            regs.cmdr().modify(|_, w| {
                 w.cmdindex()
                     .bits(config.index)
                     .cmdtrans()
@@ -470,17 +470,17 @@ where
     /// Returns the short response.
     pub fn short_response(&self) -> u32 {
         let regs = R::registers();
-        regs.sdmmc_resp1r.read().bits()
+        regs.resp1r().read().bits()
     }
 
     /// Returns the long response.
     pub fn long_response(&self) -> [u32; 4] {
         let regs = R::registers();
         [
-            regs.sdmmc_resp1r.read().bits(),
-            regs.sdmmc_resp2r.read().bits(),
-            regs.sdmmc_resp3r.read().bits(),
-            regs.sdmmc_resp4r.read().bits(),
+            regs.resp1r().read().bits(),
+            regs.resp2r().read().bits(),
+            regs.resp3r().read().bits(),
+            regs.resp4r().read().bits(),
         ]
     }
 
@@ -488,201 +488,200 @@ where
     pub fn enable(&mut self) {
         unsafe {
             let regs = R::registers();
-            regs.sdmmc_power.modify(|_, w| w.pwrctrl().bits(0b11));
+            regs.power().modify(|_, w| w.pwrctrl().bits(0b11));
         }
     }
 
     /// Returns if the peripheral is enabled.
     pub fn is_enabled(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_power.read().pwrctrl().bits() == 0b11
+        regs.power().read().pwrctrl().bits() == 0b11
     }
 
     /// Returns if the state machine is not idle.
     pub fn is_busy(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().cpsmact().bit_is_set()
-            || regs.sdmmc_star.read().dpsmact().bit_is_set()
+        regs.star().read().cpsmact().bit_is_set() || regs.star().read().dpsmact().bit_is_set()
     }
 
     /// Returns if the command response CRC check has failed.
     pub fn is_command_response_crc_failed(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().ccrcfail().bit_is_set()
+        regs.star().read().ccrcfail().bit_is_set()
     }
 
     /// Returns if the data CRC check has failed.
     pub fn is_data_crc_failed(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().dcrcfail().bit_is_set()
+        regs.star().read().dcrcfail().bit_is_set()
     }
 
     /// Returns if a command response timeout has occurred.
     pub fn is_command_response_timeout(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().ctimeout().bit_is_set()
+        regs.star().read().ctimeout().bit_is_set()
     }
 
     /// Returns if a data timeout has occurred.
     pub fn is_data_timeout(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().dtimeout().bit_is_set()
+        regs.star().read().dtimeout().bit_is_set()
     }
 
     /// Returns if a transmit FIFO underrun error has occurred.
     pub fn is_transmit_underrun_error(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().txunderr().bit_is_set()
+        regs.star().read().txunderr().bit_is_set()
     }
 
     /// Returns if a receive FIFO overrun error has occurred.
     pub fn is_receive_overrun_error(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().rxoverr().bit_is_set()
+        regs.star().read().rxoverr().bit_is_set()
     }
 
     /// Returns if a command response has been received.
     pub fn is_command_response_received(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().cmdrend().bit_is_set()
+        regs.star().read().cmdrend().bit_is_set()
     }
 
     /// Returns if a command has been sent.
     pub fn is_command_sent(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().cmdsent().bit_is_set()
+        regs.star().read().cmdsent().bit_is_set()
     }
 
     /// Returns if data transfer has been ended correctly.
     pub fn is_data_transfer_end(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().dataend().bit_is_set()
+        regs.star().read().dataend().bit_is_set()
     }
 
     /// Returns if data transfer is on hold.
     pub fn is_data_transfer_hold(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().dhold().bit_is_set()
+        regs.star().read().dhold().bit_is_set()
     }
 
     /// Returns if a data block has be sent or received.
     pub fn is_data_block_end(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().dbckend().bit_is_set()
+        regs.star().read().dbckend().bit_is_set()
     }
 
     /// Returns if data transfer has been aborted.
     pub fn is_data_transfer_aborted(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().dabort().bit_is_set()
+        regs.star().read().dabort().bit_is_set()
     }
 
     /// Returns if the transmit FIFO is empty.
     pub fn is_transmitter_empty(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().txfifoe().bit_is_set()
+        regs.star().read().txfifoe().bit_is_set()
     }
 
     /// Returns if the transmit FIFO is full.
     pub fn is_transmitter_full(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().txfifof().bit_is_set()
+        regs.star().read().txfifof().bit_is_set()
     }
 
     /// Returns if the transmit FIFO is half empty.
     pub fn is_transmitter_half_empty(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().txfifohe().bit_is_set()
+        regs.star().read().txfifohe().bit_is_set()
     }
 
     /// Returns if the receive FIFO is empty.
     pub fn is_receiver_empty(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().rxfifoe().bit_is_set()
+        regs.star().read().rxfifoe().bit_is_set()
     }
 
     /// Returns if the receive FIFO is full.
     pub fn is_receiver_full(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().rxfifof().bit_is_set()
+        regs.star().read().rxfifof().bit_is_set()
     }
 
     /// Returns if the receive FIFO is half full.
     pub fn is_receiver_half_full(&self) -> bool {
         let regs = R::registers();
-        regs.sdmmc_star.read().rxfifohf().bit_is_set()
+        regs.star().read().rxfifohf().bit_is_set()
     }
 
     /// Clears a command response CRC error.
     pub fn clear_command_response_crc_failed(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.ccrcfailc().set_bit());
+        regs.icr().write(|w| w.ccrcfailc().set_bit());
     }
 
     /// Clears a command response timeout error.
     pub fn clear_command_response_timeout(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.ctimeoutc().set_bit());
+        regs.icr().write(|w| w.ctimeoutc().set_bit());
     }
 
     /// Clears the command response received flag.
     pub fn clear_command_response_received(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.cmdrendc().set_bit());
+        regs.icr().write(|w| w.cmdrendc().set_bit());
     }
 
     /// Clears the command sent flag.
     pub fn clear_command_sent(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.cmdsentc().set_bit());
+        regs.icr().write(|w| w.cmdsentc().set_bit());
     }
 
     /// Clears a transmit FIFO underrun error.
     pub fn clear_transmit_underrun_error(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.txunderrc().set_bit());
+        regs.icr().write(|w| w.txunderrc().set_bit());
     }
 
     /// Clears a receive FIFO overrun error.
     pub fn clear_receive_overrun_error(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.rxoverrc().set_bit());
+        regs.icr().write(|w| w.rxoverrc().set_bit());
     }
 
     /// Clears a data timeout error.
     pub fn clear_data_timeout(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.dtimeoutc().set_bit());
+        regs.icr().write(|w| w.dtimeoutc().set_bit());
     }
 
     /// Clears a data CRC error.
     pub fn clear_data_crc_failed(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.dcrcfailc().set_bit());
+        regs.icr().write(|w| w.dcrcfailc().set_bit());
     }
 
     /// Clears the data transfer end flag.
     pub fn clear_data_transfer_end(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.dataendc().set_bit());
+        regs.icr().write(|w| w.dataendc().set_bit());
     }
 
     /// Clears the data transfer hold flag.
     pub fn clear_data_transfer_hold(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.dholdc().set_bit());
+        regs.icr().write(|w| w.dholdc().set_bit());
     }
 
     /// Clears the data transfer aborted flag.
     pub fn clear_data_transfer_aborted(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.dabortc().set_bit());
+        regs.icr().write(|w| w.dabortc().set_bit());
     }
 
     /// Clears the data block end flag.
     pub fn clear_data_block_end(&mut self) {
         let regs = R::registers();
-        regs.sdmmc_icr.write(|w| w.dbckendc().set_bit());
+        regs.icr().write(|w| w.dbckendc().set_bit());
     }
 
     /// Clears all data transfer flags.
@@ -726,10 +725,10 @@ impl Instance for SDMMC1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb6ensetr.modify(|_, w| w.sdmmc1en().set_bit());
+                rcc.mp_ahb6ensetr().modify(|_, w| w.sdmmc1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb6ensetr.modify(|_, w| w.sdmmc1en().set_bit());
+                rcc.mc_ahb6ensetr().modify(|_, w| w.sdmmc1en().set_bit());
             }
         }
     }
@@ -738,10 +737,10 @@ impl Instance for SDMMC1 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb6enclrr.modify(|_, w| w.sdmmc1en().set_bit());
+                rcc.mp_ahb6enclrr().modify(|_, w| w.sdmmc1en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb6enclrr.modify(|_, w| w.sdmmc1en().set_bit());
+                rcc.mc_ahb6enclrr().modify(|_, w| w.sdmmc1en().set_bit());
             }
         }
     }
@@ -762,10 +761,10 @@ impl Instance for SDMMC2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb6ensetr.modify(|_, w| w.sdmmc2en().set_bit());
+                rcc.mp_ahb6ensetr().modify(|_, w| w.sdmmc2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb6ensetr.modify(|_, w| w.sdmmc2en().set_bit());
+                rcc.mc_ahb6ensetr().modify(|_, w| w.sdmmc2en().set_bit());
             }
         }
     }
@@ -774,10 +773,10 @@ impl Instance for SDMMC2 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb6enclrr.modify(|_, w| w.sdmmc2en().set_bit());
+                rcc.mp_ahb6enclrr().modify(|_, w| w.sdmmc2en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb6enclrr.modify(|_, w| w.sdmmc2en().set_bit());
+                rcc.mc_ahb6enclrr().modify(|_, w| w.sdmmc2en().set_bit());
             }
         }
     }
@@ -798,10 +797,10 @@ impl Instance for SDMMC3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb2ensetr.modify(|_, w| w.sdmmc3en().set_bit());
+                rcc.mp_ahb2ensetr().modify(|_, w| w.sdmmc3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb2ensetr.modify(|_, w| w.sdmmc3en().set_bit());
+                rcc.mc_ahb2ensetr().modify(|_, w| w.sdmmc3en().set_bit());
             }
         }
     }
@@ -810,10 +809,10 @@ impl Instance for SDMMC3 {
         cfg_if! {
             if #[cfg(feature = "mpu-ca7")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mp_ahb2enclrr.modify(|_, w| w.sdmmc3en().set_bit());
+                rcc.mp_ahb2enclrr().modify(|_, w| w.sdmmc3en().set_bit());
             } else if #[cfg(feature = "mcu-cm4")] {
                 let rcc = unsafe { &(*pac::RCC::ptr()) };
-                rcc.rcc_mc_ahb2enclrr.modify(|_, w| w.sdmmc3en().set_bit());
+                rcc.mc_ahb2enclrr().modify(|_, w| w.sdmmc3en().set_bit());
             }
         }
     }

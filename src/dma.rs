@@ -11,11 +11,11 @@ pub fn init() {
     cfg_if! {
         if #[cfg(feature = "mpu-ca7")] {
             let rcc = unsafe { &(*pac::RCC::ptr()) };
-            rcc.rcc_mp_ahb2ensetr.modify(|_, w|
+            rcc.mp_ahb2ensetr().modify(|_, w|
                 w.dma1en().set_bit().dma2en().set_bit().dmamuxen().set_bit());
         } else if #[cfg(feature = "mcu-cm4")] {
             let rcc = unsafe { &(*pac::RCC::ptr()) };
-            rcc.rcc_mp_ahb2ensetr.modify(|_, w|
+            rcc.mp_ahb2ensetr().modify(|_, w|
                 w.dma1en().set_bit().dma2en().set_bit().dmamuxen().set_bit());
         }
     }
@@ -224,7 +224,7 @@ macro_rules! dma_stream_configure {
     ($dma: ident, $dma_cr: ident, $dmamux:ident, $dmamux_cr: ident, $config: ident) => {
         unsafe {
             let regs = &(*pac::$dma::ptr());
-            regs.$dma_cr.modify(|_, w| {
+            regs.$dma_cr().modify(|_, w| {
                 w.dir()
                     .bits($config.transfer_direction.into())
                     .msize()
@@ -263,13 +263,13 @@ macro_rules! dma_stream_configure {
 
             // TRBUFF bit is missing in PAC, so handle it manually.
             if $config.bufferable_transfers {
-                regs.$dma_cr.modify(|r, w| w.bits(r.bits() | (1 << 20)));
+                regs.$dma_cr().modify(|r, w| w.bits(r.bits() | (1 << 20)));
             } else {
-                regs.$dma_cr.modify(|r, w| w.bits(r.bits() & !(1 << 20)));
+                regs.$dma_cr().modify(|r, w| w.bits(r.bits() & !(1 << 20)));
             }
 
             let regs = &(*pac::$dmamux::ptr());
-            regs.$dmamux_cr
+            regs.$dmamux_cr()
                 .modify(|_, w| w.dmareq_id().bits($config.request_input.into()));
         }
     };
@@ -279,7 +279,7 @@ macro_rules! dma_stream_enable {
     ($dma: ident, $dma_cr: ident, $state:expr) => {
         unsafe {
             let regs = &(*pac::$dma::ptr());
-            regs.$dma_cr.modify(|_, w| w.en().bit($state));
+            regs.$dma_cr().modify(|_, w| w.en().bit($state));
         }
     };
 }
@@ -289,53 +289,53 @@ impl DmaStream {
     pub fn init(&self, config: DmaStreamConfig) {
         match self {
             DmaStream::Dma1Stream0 => {
-                dma_stream_configure!(DMA1, dma_s0cr, DMAMUX1, dmamux_c0cr, config);
+                dma_stream_configure!(DMA1, s0cr, DMAMUX1, c0cr, config);
             }
             DmaStream::Dma1Stream1 => {
-                dma_stream_configure!(DMA1, dma_s1cr, DMAMUX1, dmamux_c1cr, config);
+                dma_stream_configure!(DMA1, s1cr, DMAMUX1, c1cr, config);
             }
             DmaStream::Dma1Stream2 => {
-                dma_stream_configure!(DMA1, dma_s2cr, DMAMUX1, dmamux_c2cr, config);
+                dma_stream_configure!(DMA1, s2cr, DMAMUX1, c2cr, config);
             }
             DmaStream::Dma1Stream3 => {
-                dma_stream_configure!(DMA1, dma_s3cr, DMAMUX1, dmamux_c3cr, config);
+                dma_stream_configure!(DMA1, s3cr, DMAMUX1, c3cr, config);
             }
             DmaStream::Dma1Stream4 => {
-                dma_stream_configure!(DMA1, dma_s4cr, DMAMUX1, dmamux_c4cr, config);
+                dma_stream_configure!(DMA1, s4cr, DMAMUX1, c4cr, config);
             }
             DmaStream::Dma1Stream5 => {
-                dma_stream_configure!(DMA1, dma_s5cr, DMAMUX1, dmamux_c5cr, config);
+                dma_stream_configure!(DMA1, s5cr, DMAMUX1, c5cr, config);
             }
             DmaStream::Dma1Stream6 => {
-                dma_stream_configure!(DMA1, dma_s6cr, DMAMUX1, dmamux_c6cr, config);
+                dma_stream_configure!(DMA1, s6cr, DMAMUX1, c6cr, config);
             }
             DmaStream::Dma1Stream7 => {
-                dma_stream_configure!(DMA1, dma_s7cr, DMAMUX1, dmamux_c7cr, config);
+                dma_stream_configure!(DMA1, s7cr, DMAMUX1, c7cr, config);
             }
 
             DmaStream::Dma2Stream0 => {
-                dma_stream_configure!(DMA2, dma_s0cr, DMAMUX1, dmamux_c8cr, config);
+                dma_stream_configure!(DMA2, s0cr, DMAMUX1, c8cr, config);
             }
             DmaStream::Dma2Stream1 => {
-                dma_stream_configure!(DMA2, dma_s1cr, DMAMUX1, dmamux_c9cr, config);
+                dma_stream_configure!(DMA2, s1cr, DMAMUX1, c9cr, config);
             }
             DmaStream::Dma2Stream2 => {
-                dma_stream_configure!(DMA2, dma_s2cr, DMAMUX1, dmamux_c10cr, config);
+                dma_stream_configure!(DMA2, s2cr, DMAMUX1, c10cr, config);
             }
             DmaStream::Dma2Stream3 => {
-                dma_stream_configure!(DMA2, dma_s3cr, DMAMUX1, dmamux_c11cr, config);
+                dma_stream_configure!(DMA2, s3cr, DMAMUX1, c11cr, config);
             }
             DmaStream::Dma2Stream4 => {
-                dma_stream_configure!(DMA2, dma_s4cr, DMAMUX1, dmamux_c12cr, config);
+                dma_stream_configure!(DMA2, s4cr, DMAMUX1, c12cr, config);
             }
             DmaStream::Dma2Stream5 => {
-                dma_stream_configure!(DMA2, dma_s5cr, DMAMUX1, dmamux_c13cr, config);
+                dma_stream_configure!(DMA2, s5cr, DMAMUX1, c13cr, config);
             }
             DmaStream::Dma2Stream6 => {
-                dma_stream_configure!(DMA2, dma_s6cr, DMAMUX1, dmamux_c14cr, config);
+                dma_stream_configure!(DMA2, s6cr, DMAMUX1, c14cr, config);
             }
             DmaStream::Dma2Stream7 => {
-                dma_stream_configure!(DMA2, dma_s7cr, DMAMUX1, dmamux_c15cr, config);
+                dma_stream_configure!(DMA2, s7cr, DMAMUX1, c15cr, config);
             }
         }
     }
@@ -353,85 +353,85 @@ impl DmaStream {
             let dma2 = &(*pac::DMA2::ptr());
             match self {
                 DmaStream::Dma1Stream0 => {
-                    dma1.dma_s0m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s0par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s0ndtr.write(|w| w.bits(length));
+                    dma1.s0m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s0par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s0ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma1Stream1 => {
-                    dma1.dma_s1m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s1par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s1ndtr.write(|w| w.bits(length));
+                    dma1.s1m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s1par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s1ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma1Stream2 => {
-                    dma1.dma_s2m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s2par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s2ndtr.write(|w| w.bits(length));
+                    dma1.s2m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s2par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s2ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma1Stream3 => {
-                    dma1.dma_s3m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s3par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s3ndtr.write(|w| w.bits(length));
+                    dma1.s3m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s3par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s3ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma1Stream4 => {
-                    dma1.dma_s4m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s4par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s4ndtr.write(|w| w.bits(length));
+                    dma1.s4m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s4par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s4ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma1Stream5 => {
-                    dma1.dma_s5m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s5par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s5ndtr.write(|w| w.bits(length));
+                    dma1.s5m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s5par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s5ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma1Stream6 => {
-                    dma1.dma_s6m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s6par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s6ndtr.write(|w| w.bits(length));
+                    dma1.s6m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s6par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s6ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma1Stream7 => {
-                    dma1.dma_s7m0ar.write(|w| w.bits(memory_address.into()));
-                    dma1.dma_s7par.write(|w| w.bits(peripheral_address.into()));
-                    dma1.dma_s7ndtr.write(|w| w.bits(length));
+                    dma1.s7m0ar().write(|w| w.bits(memory_address.into()));
+                    dma1.s7par().write(|w| w.bits(peripheral_address.into()));
+                    dma1.s7ndtr().write(|w| w.bits(length));
                 }
 
                 DmaStream::Dma2Stream0 => {
-                    dma2.dma_s0m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s0par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s0ndtr.write(|w| w.bits(length));
+                    dma2.s0m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s0par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s0ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma2Stream1 => {
-                    dma2.dma_s1m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s1par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s1ndtr.write(|w| w.bits(length));
+                    dma2.s1m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s1par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s1ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma2Stream2 => {
-                    dma2.dma_s2m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s2par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s2ndtr.write(|w| w.bits(length));
+                    dma2.s2m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s2par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s2ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma2Stream3 => {
-                    dma2.dma_s3m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s3par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s3ndtr.write(|w| w.bits(length));
+                    dma2.s3m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s3par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s3ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma2Stream4 => {
-                    dma2.dma_s4m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s4par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s4ndtr.write(|w| w.bits(length));
+                    dma2.s4m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s4par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s4ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma2Stream5 => {
-                    dma2.dma_s5m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s5par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s5ndtr.write(|w| w.bits(length));
+                    dma2.s5m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s5par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s5ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma2Stream6 => {
-                    dma2.dma_s6m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s6par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s6ndtr.write(|w| w.bits(length));
+                    dma2.s6m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s6par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s6ndtr().write(|w| w.bits(length));
                 }
                 DmaStream::Dma2Stream7 => {
-                    dma2.dma_s7m0ar.write(|w| w.bits(memory_address.into()));
-                    dma2.dma_s7par.write(|w| w.bits(peripheral_address.into()));
-                    dma2.dma_s7ndtr.write(|w| w.bits(length));
+                    dma2.s7m0ar().write(|w| w.bits(memory_address.into()));
+                    dma2.s7par().write(|w| w.bits(peripheral_address.into()));
+                    dma2.s7ndtr().write(|w| w.bits(length));
                 }
             }
         }
@@ -450,53 +450,53 @@ impl DmaStream {
 
         match self {
             DmaStream::Dma1Stream0 => {
-                dma_stream_enable!(DMA1, dma_s0cr, true);
+                dma_stream_enable!(DMA1, s0cr, true);
             }
             DmaStream::Dma1Stream1 => {
-                dma_stream_enable!(DMA1, dma_s1cr, true);
+                dma_stream_enable!(DMA1, s1cr, true);
             }
             DmaStream::Dma1Stream2 => {
-                dma_stream_enable!(DMA1, dma_s2cr, true);
+                dma_stream_enable!(DMA1, s2cr, true);
             }
             DmaStream::Dma1Stream3 => {
-                dma_stream_enable!(DMA1, dma_s3cr, true);
+                dma_stream_enable!(DMA1, s3cr, true);
             }
             DmaStream::Dma1Stream4 => {
-                dma_stream_enable!(DMA1, dma_s4cr, true);
+                dma_stream_enable!(DMA1, s4cr, true);
             }
             DmaStream::Dma1Stream5 => {
-                dma_stream_enable!(DMA1, dma_s5cr, true);
+                dma_stream_enable!(DMA1, s5cr, true);
             }
             DmaStream::Dma1Stream6 => {
-                dma_stream_enable!(DMA1, dma_s6cr, true);
+                dma_stream_enable!(DMA1, s6cr, true);
             }
             DmaStream::Dma1Stream7 => {
-                dma_stream_enable!(DMA1, dma_s7cr, true);
+                dma_stream_enable!(DMA1, s7cr, true);
             }
 
             DmaStream::Dma2Stream0 => {
-                dma_stream_enable!(DMA2, dma_s0cr, true);
+                dma_stream_enable!(DMA2, s0cr, true);
             }
             DmaStream::Dma2Stream1 => {
-                dma_stream_enable!(DMA2, dma_s1cr, true);
+                dma_stream_enable!(DMA2, s1cr, true);
             }
             DmaStream::Dma2Stream2 => {
-                dma_stream_enable!(DMA2, dma_s2cr, true);
+                dma_stream_enable!(DMA2, s2cr, true);
             }
             DmaStream::Dma2Stream3 => {
-                dma_stream_enable!(DMA2, dma_s3cr, true);
+                dma_stream_enable!(DMA2, s3cr, true);
             }
             DmaStream::Dma2Stream4 => {
-                dma_stream_enable!(DMA2, dma_s4cr, true);
+                dma_stream_enable!(DMA2, s4cr, true);
             }
             DmaStream::Dma2Stream5 => {
-                dma_stream_enable!(DMA2, dma_s5cr, true);
+                dma_stream_enable!(DMA2, s5cr, true);
             }
             DmaStream::Dma2Stream6 => {
-                dma_stream_enable!(DMA2, dma_s6cr, true);
+                dma_stream_enable!(DMA2, s6cr, true);
             }
             DmaStream::Dma2Stream7 => {
-                dma_stream_enable!(DMA2, dma_s7cr, true);
+                dma_stream_enable!(DMA2, s7cr, true);
             }
         }
     }
@@ -505,53 +505,53 @@ impl DmaStream {
     pub fn disable(&self) {
         match self {
             DmaStream::Dma1Stream0 => {
-                dma_stream_enable!(DMA1, dma_s0cr, false);
+                dma_stream_enable!(DMA1, s0cr, false);
             }
             DmaStream::Dma1Stream1 => {
-                dma_stream_enable!(DMA1, dma_s1cr, false);
+                dma_stream_enable!(DMA1, s1cr, false);
             }
             DmaStream::Dma1Stream2 => {
-                dma_stream_enable!(DMA1, dma_s2cr, false);
+                dma_stream_enable!(DMA1, s2cr, false);
             }
             DmaStream::Dma1Stream3 => {
-                dma_stream_enable!(DMA1, dma_s3cr, false);
+                dma_stream_enable!(DMA1, s3cr, false);
             }
             DmaStream::Dma1Stream4 => {
-                dma_stream_enable!(DMA1, dma_s4cr, false);
+                dma_stream_enable!(DMA1, s4cr, false);
             }
             DmaStream::Dma1Stream5 => {
-                dma_stream_enable!(DMA1, dma_s5cr, false);
+                dma_stream_enable!(DMA1, s5cr, false);
             }
             DmaStream::Dma1Stream6 => {
-                dma_stream_enable!(DMA1, dma_s6cr, false);
+                dma_stream_enable!(DMA1, s6cr, false);
             }
             DmaStream::Dma1Stream7 => {
-                dma_stream_enable!(DMA1, dma_s7cr, false);
+                dma_stream_enable!(DMA1, s7cr, false);
             }
 
             DmaStream::Dma2Stream0 => {
-                dma_stream_enable!(DMA2, dma_s0cr, false);
+                dma_stream_enable!(DMA2, s0cr, false);
             }
             DmaStream::Dma2Stream1 => {
-                dma_stream_enable!(DMA2, dma_s1cr, false);
+                dma_stream_enable!(DMA2, s1cr, false);
             }
             DmaStream::Dma2Stream2 => {
-                dma_stream_enable!(DMA2, dma_s2cr, false);
+                dma_stream_enable!(DMA2, s2cr, false);
             }
             DmaStream::Dma2Stream3 => {
-                dma_stream_enable!(DMA2, dma_s3cr, false);
+                dma_stream_enable!(DMA2, s3cr, false);
             }
             DmaStream::Dma2Stream4 => {
-                dma_stream_enable!(DMA2, dma_s4cr, false);
+                dma_stream_enable!(DMA2, s4cr, false);
             }
             DmaStream::Dma2Stream5 => {
-                dma_stream_enable!(DMA2, dma_s5cr, false);
+                dma_stream_enable!(DMA2, s5cr, false);
             }
             DmaStream::Dma2Stream6 => {
-                dma_stream_enable!(DMA2, dma_s6cr, false);
+                dma_stream_enable!(DMA2, s6cr, false);
             }
             DmaStream::Dma2Stream7 => {
-                dma_stream_enable!(DMA2, dma_s7cr, false);
+                dma_stream_enable!(DMA2, s7cr, false);
             }
         }
     }
@@ -561,23 +561,23 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lisr.read().tcif0().bit(),
-            DmaStream::Dma1Stream1 => dma1.dma_lisr.read().tcif1().bit(),
-            DmaStream::Dma1Stream2 => dma1.dma_lisr.read().tcif2().bit(),
-            DmaStream::Dma1Stream3 => dma1.dma_lisr.read().tcif3().bit(),
-            DmaStream::Dma1Stream4 => dma1.dma_hisr.read().tcif4().bit(),
-            DmaStream::Dma1Stream5 => dma1.dma_hisr.read().tcif5().bit(),
-            DmaStream::Dma1Stream6 => dma1.dma_hisr.read().tcif6().bit(),
-            DmaStream::Dma1Stream7 => dma1.dma_hisr.read().tcif7().bit(),
+            DmaStream::Dma1Stream1 => dma1.lisr().read().tcif1().bit(),
+            DmaStream::Dma1Stream0 => dma1.lisr().read().tcif0().bit(),
+            DmaStream::Dma1Stream2 => dma1.lisr().read().tcif2().bit(),
+            DmaStream::Dma1Stream3 => dma1.lisr().read().tcif3().bit(),
+            DmaStream::Dma1Stream4 => dma1.hisr().read().tcif4().bit(),
+            DmaStream::Dma1Stream5 => dma1.hisr().read().tcif5().bit(),
+            DmaStream::Dma1Stream6 => dma1.hisr().read().tcif6().bit(),
+            DmaStream::Dma1Stream7 => dma1.hisr().read().tcif7().bit(),
 
-            DmaStream::Dma2Stream0 => dma2.dma_lisr.read().tcif0().bit(),
-            DmaStream::Dma2Stream1 => dma2.dma_lisr.read().tcif1().bit(),
-            DmaStream::Dma2Stream2 => dma2.dma_lisr.read().tcif2().bit(),
-            DmaStream::Dma2Stream3 => dma2.dma_lisr.read().tcif3().bit(),
-            DmaStream::Dma2Stream4 => dma2.dma_hisr.read().tcif4().bit(),
-            DmaStream::Dma2Stream5 => dma2.dma_hisr.read().tcif5().bit(),
-            DmaStream::Dma2Stream6 => dma2.dma_hisr.read().tcif6().bit(),
-            DmaStream::Dma2Stream7 => dma2.dma_hisr.read().tcif7().bit(),
+            DmaStream::Dma2Stream0 => dma2.lisr().read().tcif0().bit(),
+            DmaStream::Dma2Stream1 => dma2.lisr().read().tcif1().bit(),
+            DmaStream::Dma2Stream2 => dma2.lisr().read().tcif2().bit(),
+            DmaStream::Dma2Stream3 => dma2.lisr().read().tcif3().bit(),
+            DmaStream::Dma2Stream4 => dma2.hisr().read().tcif4().bit(),
+            DmaStream::Dma2Stream5 => dma2.hisr().read().tcif5().bit(),
+            DmaStream::Dma2Stream6 => dma2.hisr().read().tcif6().bit(),
+            DmaStream::Dma2Stream7 => dma2.hisr().read().tcif7().bit(),
         }
     }
 
@@ -586,23 +586,23 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lisr.read().htif0().bit(),
-            DmaStream::Dma1Stream1 => dma1.dma_lisr.read().htif1().bit(),
-            DmaStream::Dma1Stream2 => dma1.dma_lisr.read().htif2().bit(),
-            DmaStream::Dma1Stream3 => dma1.dma_lisr.read().htif3().bit(),
-            DmaStream::Dma1Stream4 => dma1.dma_hisr.read().htif4().bit(),
-            DmaStream::Dma1Stream5 => dma1.dma_hisr.read().htif5().bit(),
-            DmaStream::Dma1Stream6 => dma1.dma_hisr.read().htif6().bit(),
-            DmaStream::Dma1Stream7 => dma1.dma_hisr.read().htif7().bit(),
+            DmaStream::Dma1Stream0 => dma1.lisr().read().htif0().bit(),
+            DmaStream::Dma1Stream1 => dma1.lisr().read().htif1().bit(),
+            DmaStream::Dma1Stream2 => dma1.lisr().read().htif2().bit(),
+            DmaStream::Dma1Stream3 => dma1.lisr().read().htif3().bit(),
+            DmaStream::Dma1Stream4 => dma1.hisr().read().htif4().bit(),
+            DmaStream::Dma1Stream5 => dma1.hisr().read().htif5().bit(),
+            DmaStream::Dma1Stream6 => dma1.hisr().read().htif6().bit(),
+            DmaStream::Dma1Stream7 => dma1.hisr().read().htif7().bit(),
 
-            DmaStream::Dma2Stream0 => dma2.dma_lisr.read().htif0().bit(),
-            DmaStream::Dma2Stream1 => dma2.dma_lisr.read().htif1().bit(),
-            DmaStream::Dma2Stream2 => dma2.dma_lisr.read().htif2().bit(),
-            DmaStream::Dma2Stream3 => dma2.dma_lisr.read().htif3().bit(),
-            DmaStream::Dma2Stream4 => dma2.dma_hisr.read().htif4().bit(),
-            DmaStream::Dma2Stream5 => dma2.dma_hisr.read().htif5().bit(),
-            DmaStream::Dma2Stream6 => dma2.dma_hisr.read().htif6().bit(),
-            DmaStream::Dma2Stream7 => dma2.dma_hisr.read().htif7().bit(),
+            DmaStream::Dma2Stream0 => dma2.lisr().read().htif0().bit(),
+            DmaStream::Dma2Stream1 => dma2.lisr().read().htif1().bit(),
+            DmaStream::Dma2Stream2 => dma2.lisr().read().htif2().bit(),
+            DmaStream::Dma2Stream3 => dma2.lisr().read().htif3().bit(),
+            DmaStream::Dma2Stream4 => dma2.hisr().read().htif4().bit(),
+            DmaStream::Dma2Stream5 => dma2.hisr().read().htif5().bit(),
+            DmaStream::Dma2Stream6 => dma2.hisr().read().htif6().bit(),
+            DmaStream::Dma2Stream7 => dma2.hisr().read().htif7().bit(),
         }
     }
 
@@ -611,23 +611,23 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lisr.read().teif0().bit(),
-            DmaStream::Dma1Stream1 => dma1.dma_lisr.read().teif1().bit(),
-            DmaStream::Dma1Stream2 => dma1.dma_lisr.read().teif2().bit(),
-            DmaStream::Dma1Stream3 => dma1.dma_lisr.read().teif3().bit(),
-            DmaStream::Dma1Stream4 => dma1.dma_hisr.read().teif4().bit(),
-            DmaStream::Dma1Stream5 => dma1.dma_hisr.read().teif5().bit(),
-            DmaStream::Dma1Stream6 => dma1.dma_hisr.read().teif6().bit(),
-            DmaStream::Dma1Stream7 => dma1.dma_hisr.read().teif7().bit(),
+            DmaStream::Dma1Stream0 => dma1.lisr().read().teif0().bit(),
+            DmaStream::Dma1Stream1 => dma1.lisr().read().teif1().bit(),
+            DmaStream::Dma1Stream2 => dma1.lisr().read().teif2().bit(),
+            DmaStream::Dma1Stream3 => dma1.lisr().read().teif3().bit(),
+            DmaStream::Dma1Stream4 => dma1.hisr().read().teif4().bit(),
+            DmaStream::Dma1Stream5 => dma1.hisr().read().teif5().bit(),
+            DmaStream::Dma1Stream6 => dma1.hisr().read().teif6().bit(),
+            DmaStream::Dma1Stream7 => dma1.hisr().read().teif7().bit(),
 
-            DmaStream::Dma2Stream0 => dma2.dma_lisr.read().teif0().bit(),
-            DmaStream::Dma2Stream1 => dma2.dma_lisr.read().teif1().bit(),
-            DmaStream::Dma2Stream2 => dma2.dma_lisr.read().teif2().bit(),
-            DmaStream::Dma2Stream3 => dma2.dma_lisr.read().teif3().bit(),
-            DmaStream::Dma2Stream4 => dma2.dma_hisr.read().teif4().bit(),
-            DmaStream::Dma2Stream5 => dma2.dma_hisr.read().teif5().bit(),
-            DmaStream::Dma2Stream6 => dma2.dma_hisr.read().teif6().bit(),
-            DmaStream::Dma2Stream7 => dma2.dma_hisr.read().teif7().bit(),
+            DmaStream::Dma2Stream0 => dma2.lisr().read().teif0().bit(),
+            DmaStream::Dma2Stream1 => dma2.lisr().read().teif1().bit(),
+            DmaStream::Dma2Stream2 => dma2.lisr().read().teif2().bit(),
+            DmaStream::Dma2Stream3 => dma2.lisr().read().teif3().bit(),
+            DmaStream::Dma2Stream4 => dma2.hisr().read().teif4().bit(),
+            DmaStream::Dma2Stream5 => dma2.hisr().read().teif5().bit(),
+            DmaStream::Dma2Stream6 => dma2.hisr().read().teif6().bit(),
+            DmaStream::Dma2Stream7 => dma2.hisr().read().teif7().bit(),
         }
     }
 
@@ -636,23 +636,23 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lisr.read().feif0().bit(),
-            DmaStream::Dma1Stream1 => dma1.dma_lisr.read().feif1().bit(),
-            DmaStream::Dma1Stream2 => dma1.dma_lisr.read().feif2().bit(),
-            DmaStream::Dma1Stream3 => dma1.dma_lisr.read().feif3().bit(),
-            DmaStream::Dma1Stream4 => dma1.dma_hisr.read().feif4().bit(),
-            DmaStream::Dma1Stream5 => dma1.dma_hisr.read().feif5().bit(),
-            DmaStream::Dma1Stream6 => dma1.dma_hisr.read().feif6().bit(),
-            DmaStream::Dma1Stream7 => dma1.dma_hisr.read().feif7().bit(),
+            DmaStream::Dma1Stream0 => dma1.lisr().read().feif0().bit(),
+            DmaStream::Dma1Stream1 => dma1.lisr().read().feif1().bit(),
+            DmaStream::Dma1Stream2 => dma1.lisr().read().feif2().bit(),
+            DmaStream::Dma1Stream3 => dma1.lisr().read().feif3().bit(),
+            DmaStream::Dma1Stream4 => dma1.hisr().read().feif4().bit(),
+            DmaStream::Dma1Stream5 => dma1.hisr().read().feif5().bit(),
+            DmaStream::Dma1Stream6 => dma1.hisr().read().feif6().bit(),
+            DmaStream::Dma1Stream7 => dma1.hisr().read().feif7().bit(),
 
-            DmaStream::Dma2Stream0 => dma2.dma_lisr.read().feif0().bit(),
-            DmaStream::Dma2Stream1 => dma2.dma_lisr.read().feif1().bit(),
-            DmaStream::Dma2Stream2 => dma2.dma_lisr.read().feif2().bit(),
-            DmaStream::Dma2Stream3 => dma2.dma_lisr.read().feif3().bit(),
-            DmaStream::Dma2Stream4 => dma2.dma_hisr.read().feif4().bit(),
-            DmaStream::Dma2Stream5 => dma2.dma_hisr.read().feif5().bit(),
-            DmaStream::Dma2Stream6 => dma2.dma_hisr.read().feif6().bit(),
-            DmaStream::Dma2Stream7 => dma2.dma_hisr.read().feif7().bit(),
+            DmaStream::Dma2Stream0 => dma2.lisr().read().feif0().bit(),
+            DmaStream::Dma2Stream1 => dma2.lisr().read().feif1().bit(),
+            DmaStream::Dma2Stream2 => dma2.lisr().read().feif2().bit(),
+            DmaStream::Dma2Stream3 => dma2.lisr().read().feif3().bit(),
+            DmaStream::Dma2Stream4 => dma2.hisr().read().feif4().bit(),
+            DmaStream::Dma2Stream5 => dma2.hisr().read().feif5().bit(),
+            DmaStream::Dma2Stream6 => dma2.hisr().read().feif6().bit(),
+            DmaStream::Dma2Stream7 => dma2.hisr().read().feif7().bit(),
         }
     }
 
@@ -661,23 +661,23 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lisr.read().dmeif0().bit(),
-            DmaStream::Dma1Stream1 => dma1.dma_lisr.read().dmeif1().bit(),
-            DmaStream::Dma1Stream2 => dma1.dma_lisr.read().dmeif2().bit(),
-            DmaStream::Dma1Stream3 => dma1.dma_lisr.read().dmeif3().bit(),
-            DmaStream::Dma1Stream4 => dma1.dma_hisr.read().dmeif4().bit(),
-            DmaStream::Dma1Stream5 => dma1.dma_hisr.read().dmeif5().bit(),
-            DmaStream::Dma1Stream6 => dma1.dma_hisr.read().dmeif6().bit(),
-            DmaStream::Dma1Stream7 => dma1.dma_hisr.read().dmeif7().bit(),
+            DmaStream::Dma1Stream0 => dma1.lisr().read().dmeif0().bit(),
+            DmaStream::Dma1Stream1 => dma1.lisr().read().dmeif1().bit(),
+            DmaStream::Dma1Stream2 => dma1.lisr().read().dmeif2().bit(),
+            DmaStream::Dma1Stream3 => dma1.lisr().read().dmeif3().bit(),
+            DmaStream::Dma1Stream4 => dma1.hisr().read().dmeif4().bit(),
+            DmaStream::Dma1Stream5 => dma1.hisr().read().dmeif5().bit(),
+            DmaStream::Dma1Stream6 => dma1.hisr().read().dmeif6().bit(),
+            DmaStream::Dma1Stream7 => dma1.hisr().read().dmeif7().bit(),
 
-            DmaStream::Dma2Stream0 => dma2.dma_lisr.read().dmeif0().bit(),
-            DmaStream::Dma2Stream1 => dma2.dma_lisr.read().dmeif1().bit(),
-            DmaStream::Dma2Stream2 => dma2.dma_lisr.read().dmeif2().bit(),
-            DmaStream::Dma2Stream3 => dma2.dma_lisr.read().dmeif3().bit(),
-            DmaStream::Dma2Stream4 => dma2.dma_hisr.read().dmeif4().bit(),
-            DmaStream::Dma2Stream5 => dma2.dma_hisr.read().dmeif5().bit(),
-            DmaStream::Dma2Stream6 => dma2.dma_hisr.read().dmeif6().bit(),
-            DmaStream::Dma2Stream7 => dma2.dma_hisr.read().dmeif7().bit(),
+            DmaStream::Dma2Stream0 => dma2.lisr().read().dmeif0().bit(),
+            DmaStream::Dma2Stream1 => dma2.lisr().read().dmeif1().bit(),
+            DmaStream::Dma2Stream2 => dma2.lisr().read().dmeif2().bit(),
+            DmaStream::Dma2Stream3 => dma2.lisr().read().dmeif3().bit(),
+            DmaStream::Dma2Stream4 => dma2.hisr().read().dmeif4().bit(),
+            DmaStream::Dma2Stream5 => dma2.hisr().read().dmeif5().bit(),
+            DmaStream::Dma2Stream6 => dma2.hisr().read().dmeif6().bit(),
+            DmaStream::Dma2Stream7 => dma2.hisr().read().dmeif7().bit(),
         }
     }
 
@@ -695,24 +695,24 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lifcr.write(|w| w.ctcif0().set_bit()),
-            DmaStream::Dma1Stream1 => dma1.dma_lifcr.write(|w| w.ctcif1().set_bit()),
-            DmaStream::Dma1Stream2 => dma1.dma_lifcr.write(|w| w.ctcif2().set_bit()),
-            DmaStream::Dma1Stream3 => dma1.dma_lifcr.write(|w| w.ctcif3().set_bit()),
-            DmaStream::Dma1Stream4 => dma1.dma_hifcr.write(|w| w.ctcif4().set_bit()),
-            DmaStream::Dma1Stream5 => dma1.dma_hifcr.write(|w| w.ctcif5().set_bit()),
-            DmaStream::Dma1Stream6 => dma1.dma_hifcr.write(|w| w.ctcif6().set_bit()),
-            DmaStream::Dma1Stream7 => dma1.dma_hifcr.write(|w| w.ctcif7().set_bit()),
+            DmaStream::Dma1Stream0 => dma1.lifcr().write(|w| w.ctcif0().set_bit()),
+            DmaStream::Dma1Stream1 => dma1.lifcr().write(|w| w.ctcif1().set_bit()),
+            DmaStream::Dma1Stream2 => dma1.lifcr().write(|w| w.ctcif2().set_bit()),
+            DmaStream::Dma1Stream3 => dma1.lifcr().write(|w| w.ctcif3().set_bit()),
+            DmaStream::Dma1Stream4 => dma1.hifcr().write(|w| w.ctcif4().set_bit()),
+            DmaStream::Dma1Stream5 => dma1.hifcr().write(|w| w.ctcif5().set_bit()),
+            DmaStream::Dma1Stream6 => dma1.hifcr().write(|w| w.ctcif6().set_bit()),
+            DmaStream::Dma1Stream7 => dma1.hifcr().write(|w| w.ctcif7().set_bit()),
 
-            DmaStream::Dma2Stream1 => dma2.dma_lifcr.write(|w| w.ctcif0().set_bit()),
-            DmaStream::Dma2Stream0 => dma2.dma_lifcr.write(|w| w.ctcif1().set_bit()),
-            DmaStream::Dma2Stream2 => dma2.dma_lifcr.write(|w| w.ctcif2().set_bit()),
-            DmaStream::Dma2Stream3 => dma2.dma_lifcr.write(|w| w.ctcif3().set_bit()),
-            DmaStream::Dma2Stream4 => dma2.dma_hifcr.write(|w| w.ctcif4().set_bit()),
-            DmaStream::Dma2Stream5 => dma2.dma_hifcr.write(|w| w.ctcif5().set_bit()),
-            DmaStream::Dma2Stream6 => dma2.dma_hifcr.write(|w| w.ctcif6().set_bit()),
-            DmaStream::Dma2Stream7 => dma2.dma_hifcr.write(|w| w.ctcif7().set_bit()),
-        }
+            DmaStream::Dma2Stream1 => dma2.lifcr().write(|w| w.ctcif0().set_bit()),
+            DmaStream::Dma2Stream0 => dma2.lifcr().write(|w| w.ctcif1().set_bit()),
+            DmaStream::Dma2Stream2 => dma2.lifcr().write(|w| w.ctcif2().set_bit()),
+            DmaStream::Dma2Stream3 => dma2.lifcr().write(|w| w.ctcif3().set_bit()),
+            DmaStream::Dma2Stream4 => dma2.hifcr().write(|w| w.ctcif4().set_bit()),
+            DmaStream::Dma2Stream5 => dma2.hifcr().write(|w| w.ctcif5().set_bit()),
+            DmaStream::Dma2Stream6 => dma2.hifcr().write(|w| w.ctcif6().set_bit()),
+            DmaStream::Dma2Stream7 => dma2.hifcr().write(|w| w.ctcif7().set_bit()),
+        };
     }
 
     /// Clears the half transfer flag.
@@ -720,24 +720,24 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lifcr.write(|w| w.chtif0().set_bit()),
-            DmaStream::Dma1Stream1 => dma1.dma_lifcr.write(|w| w.chtif1().set_bit()),
-            DmaStream::Dma1Stream2 => dma1.dma_lifcr.write(|w| w.chtif2().set_bit()),
-            DmaStream::Dma1Stream3 => dma1.dma_lifcr.write(|w| w.chtif3().set_bit()),
-            DmaStream::Dma1Stream4 => dma1.dma_hifcr.write(|w| w.chtif4().set_bit()),
-            DmaStream::Dma1Stream5 => dma1.dma_hifcr.write(|w| w.chtif5().set_bit()),
-            DmaStream::Dma1Stream6 => dma1.dma_hifcr.write(|w| w.chtif6().set_bit()),
-            DmaStream::Dma1Stream7 => dma1.dma_hifcr.write(|w| w.chtif7().set_bit()),
+            DmaStream::Dma1Stream0 => dma1.lifcr().write(|w| w.chtif0().set_bit()),
+            DmaStream::Dma1Stream1 => dma1.lifcr().write(|w| w.chtif1().set_bit()),
+            DmaStream::Dma1Stream2 => dma1.lifcr().write(|w| w.chtif2().set_bit()),
+            DmaStream::Dma1Stream3 => dma1.lifcr().write(|w| w.chtif3().set_bit()),
+            DmaStream::Dma1Stream4 => dma1.hifcr().write(|w| w.chtif4().set_bit()),
+            DmaStream::Dma1Stream5 => dma1.hifcr().write(|w| w.chtif5().set_bit()),
+            DmaStream::Dma1Stream6 => dma1.hifcr().write(|w| w.chtif6().set_bit()),
+            DmaStream::Dma1Stream7 => dma1.hifcr().write(|w| w.chtif7().set_bit()),
 
-            DmaStream::Dma2Stream1 => dma2.dma_lifcr.write(|w| w.chtif0().set_bit()),
-            DmaStream::Dma2Stream0 => dma2.dma_lifcr.write(|w| w.chtif1().set_bit()),
-            DmaStream::Dma2Stream2 => dma2.dma_lifcr.write(|w| w.chtif2().set_bit()),
-            DmaStream::Dma2Stream3 => dma2.dma_lifcr.write(|w| w.chtif3().set_bit()),
-            DmaStream::Dma2Stream4 => dma2.dma_hifcr.write(|w| w.chtif4().set_bit()),
-            DmaStream::Dma2Stream5 => dma2.dma_hifcr.write(|w| w.chtif5().set_bit()),
-            DmaStream::Dma2Stream6 => dma2.dma_hifcr.write(|w| w.chtif6().set_bit()),
-            DmaStream::Dma2Stream7 => dma2.dma_hifcr.write(|w| w.chtif7().set_bit()),
-        }
+            DmaStream::Dma2Stream1 => dma2.lifcr().write(|w| w.chtif0().set_bit()),
+            DmaStream::Dma2Stream0 => dma2.lifcr().write(|w| w.chtif1().set_bit()),
+            DmaStream::Dma2Stream2 => dma2.lifcr().write(|w| w.chtif2().set_bit()),
+            DmaStream::Dma2Stream3 => dma2.lifcr().write(|w| w.chtif3().set_bit()),
+            DmaStream::Dma2Stream4 => dma2.hifcr().write(|w| w.chtif4().set_bit()),
+            DmaStream::Dma2Stream5 => dma2.hifcr().write(|w| w.chtif5().set_bit()),
+            DmaStream::Dma2Stream6 => dma2.hifcr().write(|w| w.chtif6().set_bit()),
+            DmaStream::Dma2Stream7 => dma2.hifcr().write(|w| w.chtif7().set_bit()),
+        };
     }
 
     /// Clears the transfer error flag.
@@ -745,24 +745,24 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lifcr.write(|w| w.cteif0().set_bit()),
-            DmaStream::Dma1Stream1 => dma1.dma_lifcr.write(|w| w.cteif1().set_bit()),
-            DmaStream::Dma1Stream2 => dma1.dma_lifcr.write(|w| w.cteif2().set_bit()),
-            DmaStream::Dma1Stream3 => dma1.dma_lifcr.write(|w| w.cteif3().set_bit()),
-            DmaStream::Dma1Stream4 => dma1.dma_hifcr.write(|w| w.cteif4().set_bit()),
-            DmaStream::Dma1Stream5 => dma1.dma_hifcr.write(|w| w.cteif5().set_bit()),
-            DmaStream::Dma1Stream6 => dma1.dma_hifcr.write(|w| w.cteif6().set_bit()),
-            DmaStream::Dma1Stream7 => dma1.dma_hifcr.write(|w| w.cteif7().set_bit()),
+            DmaStream::Dma1Stream0 => dma1.lifcr().write(|w| w.cteif0().set_bit()),
+            DmaStream::Dma1Stream1 => dma1.lifcr().write(|w| w.cteif1().set_bit()),
+            DmaStream::Dma1Stream2 => dma1.lifcr().write(|w| w.cteif2().set_bit()),
+            DmaStream::Dma1Stream3 => dma1.lifcr().write(|w| w.cteif3().set_bit()),
+            DmaStream::Dma1Stream4 => dma1.hifcr().write(|w| w.cteif4().set_bit()),
+            DmaStream::Dma1Stream5 => dma1.hifcr().write(|w| w.cteif5().set_bit()),
+            DmaStream::Dma1Stream6 => dma1.hifcr().write(|w| w.cteif6().set_bit()),
+            DmaStream::Dma1Stream7 => dma1.hifcr().write(|w| w.cteif7().set_bit()),
 
-            DmaStream::Dma2Stream1 => dma2.dma_lifcr.write(|w| w.cteif0().set_bit()),
-            DmaStream::Dma2Stream0 => dma2.dma_lifcr.write(|w| w.cteif1().set_bit()),
-            DmaStream::Dma2Stream2 => dma2.dma_lifcr.write(|w| w.cteif2().set_bit()),
-            DmaStream::Dma2Stream3 => dma2.dma_lifcr.write(|w| w.cteif3().set_bit()),
-            DmaStream::Dma2Stream4 => dma2.dma_hifcr.write(|w| w.cteif4().set_bit()),
-            DmaStream::Dma2Stream5 => dma2.dma_hifcr.write(|w| w.cteif5().set_bit()),
-            DmaStream::Dma2Stream6 => dma2.dma_hifcr.write(|w| w.cteif6().set_bit()),
-            DmaStream::Dma2Stream7 => dma2.dma_hifcr.write(|w| w.cteif7().set_bit()),
-        }
+            DmaStream::Dma2Stream1 => dma2.lifcr().write(|w| w.cteif0().set_bit()),
+            DmaStream::Dma2Stream0 => dma2.lifcr().write(|w| w.cteif1().set_bit()),
+            DmaStream::Dma2Stream2 => dma2.lifcr().write(|w| w.cteif2().set_bit()),
+            DmaStream::Dma2Stream3 => dma2.lifcr().write(|w| w.cteif3().set_bit()),
+            DmaStream::Dma2Stream4 => dma2.hifcr().write(|w| w.cteif4().set_bit()),
+            DmaStream::Dma2Stream5 => dma2.hifcr().write(|w| w.cteif5().set_bit()),
+            DmaStream::Dma2Stream6 => dma2.hifcr().write(|w| w.cteif6().set_bit()),
+            DmaStream::Dma2Stream7 => dma2.hifcr().write(|w| w.cteif7().set_bit()),
+        };
     }
 
     /// Clears the FIFO error flag.
@@ -770,24 +770,24 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lifcr.write(|w| w.cfeif0().set_bit()),
-            DmaStream::Dma1Stream1 => dma1.dma_lifcr.write(|w| w.cfeif1().set_bit()),
-            DmaStream::Dma1Stream2 => dma1.dma_lifcr.write(|w| w.cfeif2().set_bit()),
-            DmaStream::Dma1Stream3 => dma1.dma_lifcr.write(|w| w.cfeif3().set_bit()),
-            DmaStream::Dma1Stream4 => dma1.dma_hifcr.write(|w| w.cfeif4().set_bit()),
-            DmaStream::Dma1Stream5 => dma1.dma_hifcr.write(|w| w.cfeif5().set_bit()),
-            DmaStream::Dma1Stream6 => dma1.dma_hifcr.write(|w| w.cfeif6().set_bit()),
-            DmaStream::Dma1Stream7 => dma1.dma_hifcr.write(|w| w.cfeif7().set_bit()),
+            DmaStream::Dma1Stream0 => dma1.lifcr().write(|w| w.cfeif0().set_bit()),
+            DmaStream::Dma1Stream1 => dma1.lifcr().write(|w| w.cfeif1().set_bit()),
+            DmaStream::Dma1Stream2 => dma1.lifcr().write(|w| w.cfeif2().set_bit()),
+            DmaStream::Dma1Stream3 => dma1.lifcr().write(|w| w.cfeif3().set_bit()),
+            DmaStream::Dma1Stream4 => dma1.hifcr().write(|w| w.cfeif4().set_bit()),
+            DmaStream::Dma1Stream5 => dma1.hifcr().write(|w| w.cfeif5().set_bit()),
+            DmaStream::Dma1Stream6 => dma1.hifcr().write(|w| w.cfeif6().set_bit()),
+            DmaStream::Dma1Stream7 => dma1.hifcr().write(|w| w.cfeif7().set_bit()),
 
-            DmaStream::Dma2Stream1 => dma2.dma_lifcr.write(|w| w.cfeif0().set_bit()),
-            DmaStream::Dma2Stream0 => dma2.dma_lifcr.write(|w| w.cfeif1().set_bit()),
-            DmaStream::Dma2Stream2 => dma2.dma_lifcr.write(|w| w.cfeif2().set_bit()),
-            DmaStream::Dma2Stream3 => dma2.dma_lifcr.write(|w| w.cfeif3().set_bit()),
-            DmaStream::Dma2Stream4 => dma2.dma_hifcr.write(|w| w.cfeif4().set_bit()),
-            DmaStream::Dma2Stream5 => dma2.dma_hifcr.write(|w| w.cfeif5().set_bit()),
-            DmaStream::Dma2Stream6 => dma2.dma_hifcr.write(|w| w.cfeif6().set_bit()),
-            DmaStream::Dma2Stream7 => dma2.dma_hifcr.write(|w| w.cfeif7().set_bit()),
-        }
+            DmaStream::Dma2Stream1 => dma2.lifcr().write(|w| w.cfeif0().set_bit()),
+            DmaStream::Dma2Stream0 => dma2.lifcr().write(|w| w.cfeif1().set_bit()),
+            DmaStream::Dma2Stream2 => dma2.lifcr().write(|w| w.cfeif2().set_bit()),
+            DmaStream::Dma2Stream3 => dma2.lifcr().write(|w| w.cfeif3().set_bit()),
+            DmaStream::Dma2Stream4 => dma2.hifcr().write(|w| w.cfeif4().set_bit()),
+            DmaStream::Dma2Stream5 => dma2.hifcr().write(|w| w.cfeif5().set_bit()),
+            DmaStream::Dma2Stream6 => dma2.hifcr().write(|w| w.cfeif6().set_bit()),
+            DmaStream::Dma2Stream7 => dma2.hifcr().write(|w| w.cfeif7().set_bit()),
+        };
     }
 
     /// Clears the direct_mode error flag.
@@ -795,23 +795,23 @@ impl DmaStream {
         let dma1 = unsafe { &(*pac::DMA1::ptr()) };
         let dma2 = unsafe { &(*pac::DMA2::ptr()) };
         match self {
-            DmaStream::Dma1Stream0 => dma1.dma_lifcr.write(|w| w.cdmeif0().set_bit()),
-            DmaStream::Dma1Stream1 => dma1.dma_lifcr.write(|w| w.cdmeif1().set_bit()),
-            DmaStream::Dma1Stream2 => dma1.dma_lifcr.write(|w| w.cdmeif2().set_bit()),
-            DmaStream::Dma1Stream3 => dma1.dma_lifcr.write(|w| w.cdmeif3().set_bit()),
-            DmaStream::Dma1Stream4 => dma1.dma_hifcr.write(|w| w.cdmeif4().set_bit()),
-            DmaStream::Dma1Stream5 => dma1.dma_hifcr.write(|w| w.cdmeif5().set_bit()),
-            DmaStream::Dma1Stream6 => dma1.dma_hifcr.write(|w| w.cdmeif6().set_bit()),
-            DmaStream::Dma1Stream7 => dma1.dma_hifcr.write(|w| w.cdmeif7().set_bit()),
+            DmaStream::Dma1Stream0 => dma1.lifcr().write(|w| w.cdmeif0().set_bit()),
+            DmaStream::Dma1Stream1 => dma1.lifcr().write(|w| w.cdmeif1().set_bit()),
+            DmaStream::Dma1Stream2 => dma1.lifcr().write(|w| w.cdmeif2().set_bit()),
+            DmaStream::Dma1Stream3 => dma1.lifcr().write(|w| w.cdmeif3().set_bit()),
+            DmaStream::Dma1Stream4 => dma1.hifcr().write(|w| w.cdmeif4().set_bit()),
+            DmaStream::Dma1Stream5 => dma1.hifcr().write(|w| w.cdmeif5().set_bit()),
+            DmaStream::Dma1Stream6 => dma1.hifcr().write(|w| w.cdmeif6().set_bit()),
+            DmaStream::Dma1Stream7 => dma1.hifcr().write(|w| w.cdmeif7().set_bit()),
 
-            DmaStream::Dma2Stream1 => dma2.dma_lifcr.write(|w| w.cdmeif0().set_bit()),
-            DmaStream::Dma2Stream0 => dma2.dma_lifcr.write(|w| w.cdmeif1().set_bit()),
-            DmaStream::Dma2Stream2 => dma2.dma_lifcr.write(|w| w.cdmeif2().set_bit()),
-            DmaStream::Dma2Stream3 => dma2.dma_lifcr.write(|w| w.cdmeif3().set_bit()),
-            DmaStream::Dma2Stream4 => dma2.dma_hifcr.write(|w| w.cdmeif4().set_bit()),
-            DmaStream::Dma2Stream5 => dma2.dma_hifcr.write(|w| w.cdmeif5().set_bit()),
-            DmaStream::Dma2Stream6 => dma2.dma_hifcr.write(|w| w.cdmeif6().set_bit()),
-            DmaStream::Dma2Stream7 => dma2.dma_hifcr.write(|w| w.cdmeif7().set_bit()),
-        }
+            DmaStream::Dma2Stream1 => dma2.lifcr().write(|w| w.cdmeif0().set_bit()),
+            DmaStream::Dma2Stream0 => dma2.lifcr().write(|w| w.cdmeif1().set_bit()),
+            DmaStream::Dma2Stream2 => dma2.lifcr().write(|w| w.cdmeif2().set_bit()),
+            DmaStream::Dma2Stream3 => dma2.lifcr().write(|w| w.cdmeif3().set_bit()),
+            DmaStream::Dma2Stream4 => dma2.hifcr().write(|w| w.cdmeif4().set_bit()),
+            DmaStream::Dma2Stream5 => dma2.hifcr().write(|w| w.cdmeif5().set_bit()),
+            DmaStream::Dma2Stream6 => dma2.hifcr().write(|w| w.cdmeif6().set_bit()),
+            DmaStream::Dma2Stream7 => dma2.hifcr().write(|w| w.cdmeif7().set_bit()),
+        };
     }
 }

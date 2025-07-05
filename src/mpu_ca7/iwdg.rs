@@ -55,8 +55,8 @@ impl From<Prescaler> for u8 {
     }
 }
 
-impl From<u32> for Prescaler {
-    fn from(value: u32) -> Self {
+impl From<u16> for Prescaler {
+    fn from(value: u16) -> Self {
         match value {
             0b0000 => Self::Div4,
             0b0001 => Self::Div8,
@@ -88,7 +88,7 @@ where
 
         unsafe {
             let regs = R::registers();
-            regs.iwdg_kr.write(|w| w.bits(0x0000CCCC));
+            regs.kr().write(|w| w.bits(0x0000CCCC));
         }
     }
 
@@ -96,7 +96,7 @@ where
     pub fn trigger(&mut self) {
         unsafe {
             let regs = R::registers();
-            regs.iwdg_kr.write(|w| w.bits(0x0000AAAA));
+            regs.kr().write(|w| w.bits(0x0000AAAA));
         }
     }
 
@@ -105,8 +105,8 @@ where
         R::enable_clock();
 
         let regs = R::registers();
-        while regs.iwdg_sr.read().pvu().bit_is_set() {}
-        regs.iwdg_pr.read().bits().into()
+        while regs.sr().read().pvu().bit_is_set() {}
+        regs.pr().read().bits().into()
     }
 
     /// Sets the clock prescaler. Must be called after the watchdog is started.
@@ -115,10 +115,10 @@ where
 
         unsafe {
             let regs = R::registers();
-            regs.iwdg_kr.write(|w| w.bits(0x00005555));
-            while regs.iwdg_sr.read().pvu().bit_is_set() {}
-            regs.iwdg_pr.write(|w| w.pr().bits(prescaler.into()));
-            while regs.iwdg_sr.read().pvu().bit_is_set() {}
+            regs.kr().write(|w| w.bits(0x00005555));
+            while regs.sr().read().pvu().bit_is_set() {}
+            regs.pr().write(|w| w.pr().bits(prescaler.into()));
+            while regs.sr().read().pvu().bit_is_set() {}
         }
     }
 
@@ -127,8 +127,8 @@ where
         R::enable_clock();
 
         let regs = R::registers();
-        while regs.iwdg_sr.read().rvu().bit_is_set() {}
-        regs.iwdg_rlr.read().bits() as u16
+        while regs.sr().read().rvu().bit_is_set() {}
+        regs.rlr().read().bits() as u16
     }
 
     /// Sets the reload value. Must be called after the watchdog is started.
@@ -137,10 +137,10 @@ where
 
         unsafe {
             let regs = R::registers();
-            regs.iwdg_kr.write(|w| w.bits(0x00005555));
-            while regs.iwdg_sr.read().rvu().bit_is_set() {}
-            regs.iwdg_rlr.write(|w| w.rl().bits(reload));
-            while regs.iwdg_sr.read().rvu().bit_is_set() {}
+            regs.kr().write(|w| w.bits(0x00005555));
+            while regs.sr().read().rvu().bit_is_set() {}
+            regs.rlr().write(|w| w.rl().bits(reload));
+            while regs.sr().read().rvu().bit_is_set() {}
         }
     }
 
@@ -173,12 +173,12 @@ impl Instance for IWDG1 {
 
     fn enable_clock() {
         let rcc = unsafe { &(*pac::RCC::ptr()) };
-        rcc.rcc_mp_apb5ensetr.write(|w| w.iwdg1apben().set_bit());
+        rcc.mp_apb5ensetr().write(|w| w.iwdg1apben().set_bit());
     }
 
     fn disable_clock() {
         let rcc = unsafe { &(*pac::RCC::ptr()) };
-        rcc.rcc_mp_apb5enclrr.write(|w| w.iwdg1apben().set_bit());
+        rcc.mp_apb5enclrr().write(|w| w.iwdg1apben().set_bit());
     }
 }
 
@@ -191,11 +191,11 @@ impl Instance for IWDG2 {
 
     fn enable_clock() {
         let rcc = unsafe { &(*pac::RCC::ptr()) };
-        rcc.rcc_mp_apb4ensetr.write(|w| w.iwdg2apben().set_bit());
+        rcc.mp_apb4ensetr().write(|w| w.iwdg2apben().set_bit());
     }
 
     fn disable_clock() {
         let rcc = unsafe { &(*pac::RCC::ptr()) };
-        rcc.rcc_mp_apb4enclrr.write(|w| w.iwdg2apben().set_bit());
+        rcc.mp_apb4enclrr().write(|w| w.iwdg2apben().set_bit());
     }
 }
