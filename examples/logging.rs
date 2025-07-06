@@ -34,7 +34,7 @@ pub extern "C" fn main() -> ! {
         time::delay_ms(1000);
     }
 
-    panic!("Panicking on purpuse.");
+    panic!("Panicking on purpose.");
 }
 
 /// Entry point for MPU1.
