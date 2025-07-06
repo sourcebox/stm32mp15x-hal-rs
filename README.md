@@ -70,6 +70,10 @@ Note that not all peripherals can be accessed from every core, e.g. IWDG is only
 
 The examples requires an STM32MP15x-DK1 evaluation board to run. An SD card must be inserted containing [mp1-boot](https://github.com/4ms/mp1-boot) as first-stage bootloader on partitions 1 and 2.
 
+A simple serial monitor script is included in the `tools` directory. It takes the port as single argument, e.g.
+
+    ./tools/serial_monitor.py /dev/ttyACM0
+
 ## License
 
 Published under the MIT license.
