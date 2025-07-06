@@ -5,7 +5,8 @@
 #![no_std]
 #![no_main]
 
-use panic_halt as _;
+mod common;
+
 use stm32mp15x_hal as hal;
 
 use hal::{
