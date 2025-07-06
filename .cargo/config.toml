@@ -1,2 +1,13 @@
 [build]
 target = "armv7r-none-eabihf"
+rustflags = [
+    "-C",
+    "target-cpu=cortex-a7",
+    "-C",
+    "target-feature=+neon",
+    "-C",
+    "link-arg=--script=./link-ca7.ld",
+]
+
+[target.armv7r-none-eabihf]
+runner = "arm-none-eabi-gdb -x gdbinit"
