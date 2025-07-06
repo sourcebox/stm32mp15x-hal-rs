@@ -66,6 +66,10 @@ Only very basic internal handler on the Cortex-A7, efforts will be concentrated 
 
 Note that not all peripherals can be accessed from every core, e.g. IWDG is only available for the Cortex-A7 cores (MPU0 and MPU1).
 
+## Examples
+
+The examples requires an STM32MP15x-DK1 evaluation board to run. An SD card must be inserted containing [mp1-boot](https://github.com/4ms/mp1-boot) as first-stage bootloader on partitions 1 and 2.
+
 ## License
 
 Published under the MIT license.

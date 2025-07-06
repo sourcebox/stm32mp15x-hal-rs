@@ -11,6 +11,7 @@ keywords = ["stm32", "stm32mp1", "hal"]
 publish = false
 
 [features]
+default = ["mpu-ca7"]
 mpu-ca7 = ["dep:cortex-a7"]
 mcu-cm4 = ["dep:cortex-m"]
 
@@ -24,3 +25,10 @@ critical-section = { version = "1.2.0", features = ["restore-state-u32"] }
 embedded-hal = "1.0.0"
 cfg-if = "1.0.1"
 int-enum = { version = "1.2.0", default-features = false }
+
+[dev-dependencies]
+panic-halt = "1.0.0"
+
+[profile.release]
+codegen-units = 1
+debug = true
