@@ -43,6 +43,39 @@ LoopFillZerobss:
     bl main
     b .
 
+__libc_init_array:
+        push    {{r4, r5, r6, lr}}
+        ldr     r3, =__preinit_array_end
+        ldr     r5, =__preinit_array_start
+        subs    r3, r3, r5
+        asrs    r4, r3, #2
+        movs    r6, #0
+.L2:
+        cmp     r6, r4
+        bne     .L3
+        ldr     r5, =__init_array_start
+        ldr     r3, =__init_array_end
+        subs    r3, r3, r5
+        asrs    r4, r3, #2
+        movs    r6, #0
+.L4:
+        cmp     r6, r4
+        bne     .L5
+        pop     {{r4, r5, r6, pc}}
+.L3:
+        ldr     r3, [r5], #4
+        blx     r3
+        adds    r6, r6, #1
+        b       .L2
+.L5:
+        ldr     r3, [r5], #4
+        blx     r3
+        adds    r6, r6, #1
+        b       .L4
+
+_init:
+        bx      lr
+
 .size Reset_Handler, .-Reset_Handler
 
 
