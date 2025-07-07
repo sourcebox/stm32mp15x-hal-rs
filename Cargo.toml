@@ -24,6 +24,7 @@ stm32mp1 = { version = "0.16.0", default-features = false, features = [
 critical-section = { version = "1.2.0", features = ["restore-state-u32"] }
 embedded-hal = "1.0.0"
 embassy-time-driver = { version = "0.2.0", features = ["tick-hz-1_000_000"] }
+embassy-time-queue-utils = "0.1.0"
 cfg-if = "1.0.1"
 int-enum = { version = "1.2.0", default-features = false }
 

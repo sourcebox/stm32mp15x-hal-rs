@@ -1,7 +1,10 @@
 //! Time functions and structs.
 
+use core::cell::RefCell;
 use core::future::poll_fn;
 use core::task::Poll;
+
+use critical_section::{CriticalSection, Mutex};
 
 use crate::rcc::per_ck_frequency;
 use crate::stgen::Stgen;
@@ -81,7 +84,15 @@ impl embedded_hal::delay::DelayNs for Delay {
 
 // ---------------------- embassy-time-driver ------------------------
 
-struct TimeDriver;
+struct TimeDriver {
+    queue: Mutex<RefCell<embassy_time_queue_utils::Queue>>,
+}
+
+impl TimeDriver {
+    fn set_alarm(&self, cs: &CriticalSection, at: u64) -> bool {
+        todo!()
+    }
+}
 
 impl embassy_time_driver::Driver for TimeDriver {
     fn now(&self) -> u64 {
@@ -89,8 +100,20 @@ impl embassy_time_driver::Driver for TimeDriver {
     }
 
     fn schedule_wake(&self, at: u64, waker: &core::task::Waker) {
-        todo!()
+        critical_section::with(|cs| {
+            let mut queue = self.queue.borrow(cs).borrow_mut();
+            if queue.schedule_wake(at, waker) {
+                let mut next = queue.next_expiration(self.now());
+                while !self.set_alarm(&cs, next) {
+                    next = queue.next_expiration(self.now());
+                }
+            }
+        });
     }
 }
 
-embassy_time_driver::time_driver_impl!(static DRIVER: TimeDriver = TimeDriver{});
+embassy_time_driver::time_driver_impl!(
+    static TIME_DRIVER: TimeDriver = TimeDriver {
+        queue: Mutex::new(RefCell::new(embassy_time_queue_utils::Queue::new()))
+    }
+);
