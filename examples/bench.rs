@@ -9,9 +9,9 @@ mod common;
 
 use stm32mp15x_hal as hal;
 
-use hal::{time, HalConfig};
+use hal::HalConfig;
 
-use common::{clocks, logger, memory_region_mapper};
+use common::{logger, memory_region_mapper};
 
 /// Entry point for MPU0.
 #[no_mangle]
