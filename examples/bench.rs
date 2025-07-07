@@ -9,9 +9,9 @@ mod common;
 
 use stm32mp15x_hal as hal;
 
-use hal::{time, HalConfig, MemoryRegion};
+use hal::{time, HalConfig};
 
-use common::{clocks, logger};
+use common::{clocks, logger, memory_region_mapper};
 
 /// Entry point for MPU0.
 #[no_mangle]
@@ -32,16 +32,6 @@ pub extern "C" fn main() -> ! {
 #[no_mangle]
 pub extern "C" fn mpu1_main() -> ! {
     loop {}
-}
-
-/// Returns the memory region for an address. To be used for MMU translation table.
-fn memory_region_mapper(addr: u32) -> MemoryRegion {
-    match addr {
-        0xC2000000..=0xCFFFFFFF => MemoryRegion::Code,
-        0xC0000000..=0xC1FFFFFF => MemoryRegion::Data,
-        0xD0000000..=0xDFFFFFFF => MemoryRegion::Data,
-        _ => MemoryRegion::Device,
-    }
 }
 
 mod bench {
