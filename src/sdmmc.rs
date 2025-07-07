@@ -8,7 +8,7 @@ use cfg_if::cfg_if;
 use crate::bitworker::BitWorker;
 use crate::pac;
 use crate::rcc;
-use crate::time::Instant;
+use crate::time;
 use pac::sdmmc1::RegisterBlock;
 use pac::{SDMMC1, SDMMC2, SDMMC3};
 
@@ -258,7 +258,7 @@ where
             }
         }
 
-        let init_start_time = Instant::now();
+        let init_start_time = time::millis();
 
         loop {
             // Set next command as application-specific via via CMD55 - APP_CMD.
@@ -283,7 +283,7 @@ where
                 break;
             }
 
-            if init_start_time.is_elapsed_millis(CARD_INIT_TIMEOUT) {
+            if time::millis() > init_start_time + CARD_INIT_TIMEOUT {
                 return Err(Error::InitTimeout);
             }
         }
@@ -315,7 +315,7 @@ where
         });
         self.wait_for_command_response()?;
 
-        let init_start_time = Instant::now();
+        let init_start_time = time::millis();
 
         loop {
             // Get card status via CMD13 - SEND_STATUS
@@ -334,7 +334,7 @@ where
                 break;
             }
 
-            if init_start_time.is_elapsed_millis(CARD_INIT_TIMEOUT) {
+            if time::millis() > init_start_time + CARD_INIT_TIMEOUT {
                 return Err(Error::InitTimeout);
             }
         }

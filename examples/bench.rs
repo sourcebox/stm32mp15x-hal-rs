@@ -7,9 +7,8 @@
 
 mod common;
 
-use stm32mp15x_hal as hal;
-
 use hal::HalConfig;
+use stm32mp15x_hal as hal;
 
 use common::{logger, memory_region_mapper};
 
@@ -35,7 +34,7 @@ pub extern "C" fn mpu1_main() -> ! {
 }
 
 mod bench {
-    use crate::hal::time;
+    use embassy_time::Instant;
 
     pub fn run() {
         i32_add();
@@ -60,7 +59,7 @@ mod bench {
             let mut f6 = TV[6];
             let mut f7 = TV[7];
 
-            let time = time::micros();
+            let time = Instant::now().as_micros();
 
             for _ in 0..N / 8 {
                 f0 = f1 + f2;
@@ -73,7 +72,7 @@ mod bench {
                 f7 = f0 + f1;
             }
 
-            let time = time::micros() - time;
+            let time = Instant::now().as_micros() - time;
 
             TV[0] = f0;
             TV[1] = f1;
@@ -102,7 +101,7 @@ mod bench {
             let mut f6 = TV[6];
             let mut f7 = TV[7];
 
-            let time = time::micros();
+            let time = Instant::now().as_micros();
 
             for _ in 0..N / 8 {
                 f0 = f1 * f2;
@@ -115,7 +114,7 @@ mod bench {
                 f7 = f0 * f1;
             }
 
-            let time = time::micros() - time;
+            let time = Instant::now().as_micros() - time;
 
             TV[0] = f0;
             TV[1] = f1;
@@ -144,7 +143,7 @@ mod bench {
             let mut f6 = TV[6];
             let mut f7 = TV[7];
 
-            let time = time::micros();
+            let time = Instant::now().as_micros();
 
             for _ in 0..N / 8 {
                 f0 = f1 + f2;
@@ -157,7 +156,7 @@ mod bench {
                 f7 = f0 + f1;
             }
 
-            let time = time::micros() - time;
+            let time = Instant::now().as_micros() - time;
 
             TV[0] = f0;
             TV[1] = f1;
@@ -186,7 +185,7 @@ mod bench {
             let mut f6 = TV[6];
             let mut f7 = TV[7];
 
-            let time = time::micros();
+            let time = Instant::now().as_micros();
 
             for _ in 0..N / 8 {
                 f0 = f1 * f2;
@@ -199,7 +198,7 @@ mod bench {
                 f7 = f0 * f1;
             }
 
-            let time = time::micros() - time;
+            let time = Instant::now().as_micros() - time;
 
             TV[0] = f0;
             TV[1] = f1;
@@ -228,7 +227,7 @@ mod bench {
             let mut f6 = TV[6];
             let mut f7 = TV[7];
 
-            let time = time::micros();
+            let time = Instant::now().as_micros();
 
             for _ in 0..N / 8 {
                 f0 = f1 / f2;
@@ -241,7 +240,7 @@ mod bench {
                 f7 = f0 / f1;
             }
 
-            let time = time::micros() - time;
+            let time = Instant::now().as_micros() - time;
 
             TV[0] = f0;
             TV[1] = f1;
@@ -270,7 +269,7 @@ mod bench {
             let mut f6 = TV[6];
             let mut f7 = TV[7];
 
-            let time = time::micros();
+            let time = Instant::now().as_micros();
 
             for _ in 0..N / 8 {
                 f0 += f1 * f2;
@@ -283,7 +282,7 @@ mod bench {
                 f7 += f0 * f1;
             }
 
-            let time = time::micros() - time;
+            let time = Instant::now().as_micros() - time;
 
             TV[0] = f0;
             TV[1] = f1;
