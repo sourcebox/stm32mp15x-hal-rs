@@ -109,3 +109,34 @@ bss_loop:
 run_main:
     bl main
     b .
+
+__libc_init_array:
+        push    {{r4, r5, r6, lr}}
+        mov     r6, #0
+        ldr     r5, =__preinit_array_start
+        ldr     r4, =__preinit_array_end
+        sub     r4, r4, r5
+        asr     r4, r4, #2
+.L2:
+        cmp     r6, r4
+        bne     .L3
+        ldr     r5, =__init_array_start
+        mov     r6, #0
+        ldr     r4, =__init_array_end
+        sub     r4, r4, r5
+        asr     r4, r4, #2
+.L4:
+        cmp     r6, r4
+        popeq   {{r4, r5, r6, pc}}
+        ldr     r3, [r5], #4
+        add     r6, r6, #1
+        blx     r3
+        b       .L4
+.L3:
+        ldr     r3, [r5], #4
+        add     r6, r6, #1
+        blx     r3
+        b       .L2
+
+_init:
+        bx      lr

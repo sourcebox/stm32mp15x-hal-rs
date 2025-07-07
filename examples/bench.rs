@@ -44,10 +44,6 @@ fn memory_region_mapper(addr: u32) -> MemoryRegion {
     }
 }
 
-/// Dummy function called in startup code. Required by C/C++ to work correctly.
-#[no_mangle]
-pub extern "C" fn __libc_init_array() {}
-
 mod bench {
     use crate::hal::time;
 
