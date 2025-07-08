@@ -85,13 +85,15 @@ impl embedded_hal::delay::DelayNs for Delay {
 // ---------------------- embassy-time-driver ------------------------
 
 struct TimeDriver {
-    queue: Mutex<RefCell<embassy_time_queue_utils::Queue>>,
+    // queue: Mutex<RefCell<embassy_time_queue_utils::Queue>>,
 }
 
 impl TimeDriver {
-    fn set_alarm(&self, cs: &CriticalSection, at: u64) -> bool {
-        todo!()
-    }
+    // fn set_alarm(&self, _cs: &CriticalSection, at: u64) -> bool {
+    //     // TODO: configure a timer to fire an interrupt after it expires,
+    //     // which then calls the waker.
+    //     micros() >= at
+    // }
 }
 
 impl embassy_time_driver::Driver for TimeDriver {
@@ -99,21 +101,24 @@ impl embassy_time_driver::Driver for TimeDriver {
         micros()
     }
 
-    fn schedule_wake(&self, at: u64, waker: &core::task::Waker) {
-        critical_section::with(|cs| {
-            let mut queue = self.queue.borrow(cs).borrow_mut();
-            if queue.schedule_wake(at, waker) {
-                let mut next = queue.next_expiration(self.now());
-                while !self.set_alarm(&cs, next) {
-                    next = queue.next_expiration(self.now());
-                }
-            }
-        });
+    fn schedule_wake(&self, _at: u64, waker: &core::task::Waker) {
+        // TODO: let a timer interrupt do the wake.
+        waker.wake_by_ref();
+
+        // critical_section::with(|cs| {
+        //     let mut queue = self.queue.borrow(cs).borrow_mut();
+        //     if queue.schedule_wake(at, waker) {
+        //         let mut next = queue.next_expiration(self.now());
+        //         while !self.set_alarm(&cs, next) {
+        //             next = queue.next_expiration(self.now());
+        //         }
+        //     }
+        // });
     }
 }
 
 embassy_time_driver::time_driver_impl!(
     static TIME_DRIVER: TimeDriver = TimeDriver {
-        queue: Mutex::new(RefCell::new(embassy_time_queue_utils::Queue::new()))
+        // queue: Mutex::new(RefCell::new(embassy_time_queue_utils::Queue::new()))
     }
 );
