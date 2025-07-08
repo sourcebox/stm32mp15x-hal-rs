@@ -24,7 +24,7 @@ stm32mp1 = { version = "0.16.0", default-features = false, features = [
 critical-section = { version = "1.2.0", features = ["restore-state-u32"] }
 embedded-hal = "1.0.0"
 embassy-time-driver = { version = "0.2.0", features = ["tick-hz-1_000_000"] }
-embassy-time-queue-utils = "0.1.0"
+embassy-time-queue-utils = { git = "https://github.com/embassy-rs/embassy" }
 cfg-if = "1.0.1"
 int-enum = { version = "1.2.0", default-features = false }
 
@@ -32,6 +32,10 @@ int-enum = { version = "1.2.0", default-features = false }
 static_cell = "2.1.1"
 log = "0.4.27"
 embassy-time = { version = "0.4.0", features = ["tick-hz-1_000_000"] }
+embassy-executor = { git = "https://github.com/embassy-rs/embassy", features = [
+    "arch-cortex-ar",
+    "executor-thread",
+] }
 
 [profile.release]
 codegen-units = 1
